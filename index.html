@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenMapIndia — 100% GitHub-Native Geocompute Engine for India</title>
+  
+  <!-- MapLibre GL CSS & JS -->
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+  <style>
+    :root {
+      --bg-dark: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.92);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background: var(--bg-dark);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    #map {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+    }
+
+    /* Floating UI Container */
+    .app-shell {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      bottom: 16px;
+      width: 440px;
+      max-width: calc(100vw - 32px);
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+      pointer-events: auto;
+      overflow: hidden;
+      transition: all 0.25s ease;
+    }
+
+    /* Header */
+    .header-card {
+      padding: 16px 20px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .brand h1 {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-tag {
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .header-subtitle {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .national-pills {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Scrollable Controls & Results */
+    .controls-card {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+      max-height: calc(100vh - 200px);
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    label {
+      font-size: 11.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    select, input {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+
+    /* Analytics Panel */
+    .analytics-panel {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .analytics-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .analytics-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .score-badge {
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.2);
+      color: var(--emerald);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stat-box {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-box-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .stat-box-lbl {
+      font-size: 10.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Village Result Card */
+    .village-detail {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .v-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+
+    .v-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .v-type {
+      font-size: 11px;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+    }
+
+    .vector-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .vector-icon {
+      font-size: 20px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .vector-meta {
+      flex: 1;
+    }
+
+    .vector-meta-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f1f5f9;
+    }
+
+    .vector-meta-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .vector-dist {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Actions */
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #0f172a;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Map Custom Markers */
+    .marker-village {
+      width: 14px;
+      height: 14px;
+      background: #10b981;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #10b981;
+    }
+
+    .marker-phc {
+      font-size: 20px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+
+    .marker-hw {
+      font-size: 18px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .app-shell {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        width: auto;
+      }
+      .controls-card {
+        max-height: 48vh;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="map"></div>
+
+  <div class="app-shell">
+    <!-- Header -->
+    <div class="glass-card header-card">
+      <div class="brand">
+        <span>🇮🇳</span>
+        <h1>OpenMapIndia</h1>
+        <span class="brand-tag">v1.0 API</span>
+      </div>
+      <p class="header-subtitle">
+        100% GitHub-Native Geocompute & Precomputed Rural Routing Infrastructure for India.
+      </p>
+      <div class="national-pills">
+        <span class="pill">🏛️ 35 States & UTs</span>
+        <span class="pill">📍 594 Districts</span>
+        <span class="pill">🏡 373,988 Settlements</span>
+        <span class="pill">⚡ 22 MB Total</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="glass-card controls-card">
+      <!-- State Selector -->
+      <div class="field-group">
+        <label>1. Select State / UT</label>
+        <select id="stateSelect">
+          <option value="">Loading States...</option>
+        </select>
+      </div>
+
+      <!-- District Selector -->
+      <div class="field-group" id="districtGroup" style="display: none;">
+        <label>2. Select District</label>
+        <select id="districtSelect">
+          <option value="">Choose District...</option>
+        </select>
+      </div>
+
+      <!-- District Analytics -->
+      <div class="analytics-panel" id="analyticsPanel" style="display: none;">
+        <div class="analytics-header">
+          <span class="analytics-title" id="analyticsDistrictName">District Analytics</span>
+          <span class="score-badge" id="analyticsScore">Score: --</span>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-box-val" id="statPhcKm">-- km</div>
+            <div class="stat-box-lbl">Avg Distance to PHC</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-val" id="statHwPct">--%</div>
+            <div class="stat-box-lbl">Near Highway (&lt;5km)</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-val" id="statHwKm">-- km</div>
+            <div class="stat-box-lbl">Avg Highway Distance</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-box-val" id="statSettlements">--</div>
+            <div class="stat-box-lbl">Indexed Settlements</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Village Search & Dropdown -->
+      <div class="field-group" id="villageGroup" style="display: none;">
+        <label>3. Search Settlement / Village</label>
+        <input type="text" id="villageSearch" placeholder="Type village name (e.g. Kalwari)..." />
+        <select id="villageSelect" size="5" style="margin-top: 6px; display: none;">
+        </select>
+      </div>
+
+      <!-- Village Vector Card -->
+      <div class="village-detail" id="villageDetail" style="display: none;">
+        <div class="v-header">
+          <span class="v-name" id="vName">Village Name</span>
+          <span class="v-type" id="vType">VILLAGE</span>
+        </div>
+
+        <!-- PHC Vector -->
+        <div class="vector-row">
+          <div class="vector-icon">🏥</div>
+          <div class="vector-meta">
+            <div class="vector-meta-title" id="vPhcName">Nearest PHC</div>
+            <div class="vector-meta-sub" id="vPhcType">Primary Health Centre</div>
+          </div>
+          <div class="vector-dist" id="vPhcDist">-- m</div>
+        </div>
+
+        <!-- Highway Vector -->
+        <div class="vector-row">
+          <div class="vector-icon">🛣️</div>
+          <div class="vector-meta">
+            <div class="vector-meta-title" id="vHwRef">Nearest Highway</div>
+            <div class="vector-meta-sub" id="vHwGrade">Arterial Corridor</div>
+          </div>
+          <div class="vector-dist" id="vHwDist">-- m</div>
+        </div>
+
+        <!-- Copy API Snippet -->
+        <div class="btn-group">
+          <button class="btn btn-primary" id="btnCopyUrl">📋 Copy API URL</button>
+          <a class="btn btn-secondary" id="btnViewJson" target="_blank" style="text-decoration: none;">🔍 View JSON</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Polyline decoder (Google / OSRM algorithm)
+    function decodePolyline(str, precision = 5) {
+      let index = 0, lat = 0, lng = 0, coordinates = [];
+      let factor = Math.pow(10, precision);
+      while (index < str.length) {
+        let b, shift = 0, result = 0;
+        do {
+          b = str.charCodeAt(index++) - 63;
+          result |= (b & 0x1f) << shift;
+          shift += 5;
+        } while (b >= 0x20);
+        let dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lat += dlat;
+        shift = 0;
+        result = 0;
+        do {
+          b = str.charCodeAt(index++) - 63;
+          result |= (b & 0x1f) << shift;
+          shift += 5;
+        } while (b >= 0x20);
+        let dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lng += dlng;
+        coordinates.push([lng / factor, lat / factor]);
+      }
+      return coordinates;
+    }
+
+    // Initialize MapLibre GL Map
+    const map = new maplibregl.Map({
+      container: 'map',
+      style: {
+        version: 8,
+        sources: {
+          'osm-tiles': {
+            type: 'raster',
+            tiles: [
+              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+            ],
+            tileSize: 256,
+            attribution: '&copy; OpenStreetMap Contributors'
+          }
+        },
+        layers: [
+          {
+            id: 'osm-layer',
+            type: 'raster',
+            source: 'osm-tiles',
+            minzoom: 0,
+            maxzoom: 19
+          }
+        ]
+      },
+      center: [78.9629, 22.5937],
+      zoom: 4.8
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+    let nationalData = null;
+    let currentDistrictData = null;
+    let markers = [];
+
+    function clearMarkers() {
+      markers.forEach(m => m.remove());
+      markers = [];
+      if (map.getSource('phc-route')) {
+        map.removeLayer('phc-route-layer');
+        map.removeSource('phc-route');
+      }
+      if (map.getSource('hw-route')) {
+        map.removeLayer('hw-route-layer');
+        map.removeSource('hw-route');
+      }
+    }
+
+    // Load National Root Index
+    async function initApp() {
+      try {
+        const res = await fetch('api/v1/india.json');
+        nationalData = await res.json();
+
+        const stateSelect = document.getElementById('stateSelect');
+        stateSelect.innerHTML = '<option value="">-- Choose State --</option>';
+
+        nationalData.states.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.state_slug;
+          opt.textContent = `${s.state} (${s.total_districts} districts)`;
+          stateSelect.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Failed to load national root:', err);
+      }
+    }
+
+    // State change handler
+    document.getElementById('stateSelect').addEventListener('change', async (e) => {
+      const stateSlug = e.target.value;
+      const districtGroup = document.getElementById('districtGroup');
+      const districtSelect = document.getElementById('districtSelect');
+      const analyticsPanel = document.getElementById('analyticsPanel');
+      const villageGroup = document.getElementById('villageGroup');
+      const villageDetail = document.getElementById('villageDetail');
+
+      clearMarkers();
+      districtSelect.innerHTML = '<option value="">Loading districts...</option>';
+      analyticsPanel.style.display = 'none';
+      villageGroup.style.display = 'none';
+      villageDetail.style.display = 'none';
+
+      if (!stateSlug) {
+        districtGroup.style.display = 'none';
+        return;
+      }
+
+      districtGroup.style.display = 'flex';
+      const stateRes = await fetch(`api/v1/states/${stateSlug}.json`);
+      const stateData = await stateRes.json();
+
+      districtSelect.innerHTML = '<option value="">-- Choose District --</option>';
+      stateData.districts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.district_slug;
+        opt.textContent = `${d.district} (${d.total_settlements} settlements)`;
+        districtSelect.appendChild(opt);
+      });
+    });
+
+    // District change handler
+    document.getElementById('districtSelect').addEventListener('change', async (e) => {
+      const stateSlug = document.getElementById('stateSelect').value;
+      const districtSlug = e.target.value;
+      const analyticsPanel = document.getElementById('analyticsPanel');
+      const villageGroup = document.getElementById('villageGroup');
+      const villageDetail = document.getElementById('villageDetail');
+      const villageSearch = document.getElementById('villageSearch');
+
+      clearMarkers();
+      villageDetail.style.display = 'none';
+      villageSearch.value = '';
+
+      if (!districtSlug) {
+        analyticsPanel.style.display = 'none';
+        villageGroup.style.display = 'none';
+        return;
+      }
+
+      const res = await fetch(`api/v1/districts/${stateSlug}/${districtSlug}.json`);
+      currentDistrictData = await res.json();
+
+      // Show Analytics
+      analyticsPanel.style.display = 'flex';
+      villageGroup.style.display = 'flex';
+
+      document.getElementById('analyticsDistrictName').textContent = `${currentDistrictData.district} Analytics`;
+      document.getElementById('analyticsScore').textContent = `Score: ${currentDistrictData.analytics.infrastructure_score}/100`;
+      document.getElementById('statPhcKm').textContent = `${currentDistrictData.analytics.avg_phc_distance_km} km`;
+      document.getElementById('statHwPct').textContent = `${currentDistrictData.analytics.pct_villages_under_5km_highway}%`;
+      document.getElementById('statHwKm').textContent = `${currentDistrictData.analytics.avg_highway_distance_km} km`;
+      document.getElementById('statSettlements').textContent = currentDistrictData.total_settlements.toLocaleString();
+
+      // Fit District Bounding Box
+      if (currentDistrictData.bbox) {
+        const [minx, miny, maxx, maxy] = currentDistrictData.bbox;
+        map.fitBounds([[minx, miny], [maxx, maxy]], { padding: 40, maxZoom: 12 });
+      }
+
+      populateVillageList(currentDistrictData.villages.slice(0, 50));
+    });
+
+    function populateVillageList(villages) {
+      const vSelect = document.getElementById('villageSelect');
+      vSelect.innerHTML = '';
+      if (!villages.length) {
+        vSelect.style.display = 'none';
+        return;
+      }
+      vSelect.style.display = 'block';
+      villages.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v.id;
+        opt.textContent = `${v.name} (${v.type})`;
+        vSelect.appendChild(opt);
+      });
+    }
+
+    // Village Search Typeahead
+    document.getElementById('villageSearch').addEventListener('input', (e) => {
+      if (!currentDistrictData) return;
+      const q = e.target.value.toLowerCase().trim();
+      if (!q) {
+        populateVillageList(currentDistrictData.villages.slice(0, 50));
+        return;
+      }
+      const matched = currentDistrictData.villages.filter(v => v.name.toLowerCase().includes(q)).slice(0, 50);
+      populateVillageList(matched);
+    });
+
+    // Village Select Handler
+    document.getElementById('villageSelect').addEventListener('change', (e) => {
+      const villageId = Number(e.target.value);
+      const village = currentDistrictData.villages.find(v => v.id === villageId);
+      if (village) renderVillage(village);
+    });
+
+    function renderVillage(v) {
+      clearMarkers();
+      const [vLat, vLon] = v.coords;
+      const phc = v.precomputed_routing.nearest_health;
+      const hw = v.precomputed_routing.nearest_highway;
+
+      // Update UI Card
+      const detail = document.getElementById('villageDetail');
+      detail.style.display = 'flex';
+      document.getElementById('vName').textContent = v.name;
+      document.getElementById('vType').textContent = v.type.toUpperCase();
+      document.getElementById('vPhcName').textContent = phc.name;
+      document.getElementById('vPhcType').textContent = phc.type.toUpperCase();
+      document.getElementById('vPhcDist').textContent = `${(phc.distance_m / 1000).toFixed(1)} km`;
+
+      document.getElementById('vHwRef').textContent = hw.ref || "Arterial Highway";
+      document.getElementById('vHwGrade').textContent = hw.grade.toUpperCase();
+      document.getElementById('vHwDist').textContent = `${(hw.distance_m / 1000).toFixed(1)} km`;
+
+      const stateSlug = currentDistrictData.state_slug;
+      const distSlug = currentDistrictData.district_slug;
+      const rawUrl = `api/v1/districts/${stateSlug}/${distSlug}.json`;
+      document.getElementById('btnViewJson').href = rawUrl;
+      document.getElementById('btnCopyUrl').onclick = () => {
+        navigator.clipboard.writeText(window.location.origin + window.location.pathname + rawUrl);
+        alert('API URL copied to clipboard!');
+      };
+
+      // 1. Village Marker
+      const vEl = document.createElement('div');
+      vEl.className = 'marker-village';
+      const vMarker = new maplibregl.Marker({ element: vEl })
+        .setLngLat([vLon, vLat])
+        .setPopup(new maplibregl.Popup({ offset: 12 }).setHTML(`<b>🏡 ${v.name}</b><br>Type: ${v.type}`))
+        .addTo(map);
+      markers.push(vMarker);
+
+      // 2. Decode Polylines
+      const phcCoords = decodePolyline(phc.polyline);
+      const hwCoords = decodePolyline(hw.polyline);
+
+      // Add Routes
+      map.addSource('phc-route', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: { type: 'LineString', coordinates: phcCoords }
+        }
+      });
+      map.addLayer({
+        id: 'phc-route-layer',
+        type: 'line',
+        source: 'phc-route',
+        paint: {
+          'line-color': '#10b981',
+          'line-width': 4,
+          'line-opacity': 0.85
+        }
+      });
+
+      map.addSource('hw-route', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          geometry: { type: 'LineString', coordinates: hwCoords }
+        }
+      });
+      map.addLayer({
+        id: 'hw-route-layer',
+        type: 'line',
+        source: 'hw-route',
+        paint: {
+          'line-color': '#f59e0b',
+          'line-width': 3.5,
+          'line-dasharray': [2, 1],
+          'line-opacity': 0.85
+        }
+      });
+
+      // 3. Hospital Marker
+      const phcEnd = phcCoords[phcCoords.length - 1];
+      const phcEl = document.createElement('div');
+      phcEl.className = 'marker-phc';
+      phcEl.textContent = '🏥';
+      const phcMarker = new maplibregl.Marker({ element: phcEl })
+        .setLngLat(phcEnd)
+        .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML(`<b>🏥 ${phc.name}</b><br>Road Distance: ${phc.distance_m}m`))
+        .addTo(map);
+      markers.push(phcMarker);
+
+      // 4. Highway Marker
+      const hwEnd = hwCoords[hwCoords.length - 1];
+      const hwEl = document.createElement('div');
+      hwEl.className = 'marker-hw';
+      hwEl.textContent = '🛣️';
+      const hwMarker = new maplibregl.Marker({ element: hwEl })
+        .setLngLat(hwEnd)
+        .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML(`<b>🛣️ ${hw.ref || 'Highway'}</b><br>Junction distance: ${hw.distance_m}m`))
+        .addTo(map);
+      markers.push(hwMarker);
+
+      // Fly to bounds containing village and points
+      const bounds = new maplibregl.LngLatBounds();
+      bounds.extend([vLon, vLat]);
+      bounds.extend(phcEnd);
+      bounds.extend(hwEnd);
+      map.fitBounds(bounds, { padding: 90, maxZoom: 15 });
+    }
+
+    map.on('load', initApp);
+  </script>
+</body>
+</html>

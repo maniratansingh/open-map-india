@@ -1,10 +1,11 @@
 """
-India Universal Geocompute Engine - Zero-Dependency Python SDK
+OpenMapIndia - Zero-Dependency Python SDK
+Precomputed Geocompute, Rural Routing & Infrastructure Intelligence for India
 """
 import json
 import urllib.request
 
-class IndiaGeoEngine:
+class OpenMapIndia:
     def __init__(self, cdn_base="https://cdn.jsdelivr.net/gh/<owner>/<repo>@main/api/v1"):
         self.cdn_base = cdn_base.rstrip('/')
         self._cache = {}

@@ -1,4 +1,5 @@
 {
+  "project": "OpenMapIndia",
   "version": "1.0.0",
   "country": "India",
   "iso": "IND",
@@ -7,215 +8,395 @@
     "total_districts": 594,
     "total_settlements": 373988
   },
+  "national_analytics": {
+    "avg_infrastructure_score": 77.9,
+    "avg_distance_to_phc_km": 6.24,
+    "avg_villages_under_5km_highway_pct": 77.4
+  },
   "states": [
     {
       "state": "Andaman and Nicobar",
       "state_slug": "andaman_and_nicobar",
       "total_districts": 2,
+      "analytics": {
+        "avg_infrastructure_score": 36.8,
+        "avg_phc_distance_km": 222.25,
+        "pct_villages_under_5km_highway": 32.8
+      },
       "_ref": "./states/andaman_and_nicobar.json"
     },
     {
       "state": "Andhra Pradesh",
       "state_slug": "andhra_pradesh",
       "total_districts": 23,
+      "analytics": {
+        "avg_infrastructure_score": 82.6,
+        "avg_phc_distance_km": 4.99,
+        "pct_villages_under_5km_highway": 85.1
+      },
       "_ref": "./states/andhra_pradesh.json"
     },
     {
       "state": "Arunachal Pradesh",
       "state_slug": "arunachal_pradesh",
       "total_districts": 15,
+      "analytics": {
+        "avg_infrastructure_score": 44.1,
+        "avg_phc_distance_km": 15.78,
+        "pct_villages_under_5km_highway": 47.8
+      },
       "_ref": "./states/arunachal_pradesh.json"
     },
     {
       "state": "Assam",
       "state_slug": "assam",
       "total_districts": 23,
+      "analytics": {
+        "avg_infrastructure_score": 82.6,
+        "avg_phc_distance_km": 4.78,
+        "pct_villages_under_5km_highway": 84.4
+      },
       "_ref": "./states/assam.json"
     },
     {
       "state": "Bihar",
       "state_slug": "bihar",
       "total_districts": 37,
+      "analytics": {
+        "avg_infrastructure_score": 88.0,
+        "avg_phc_distance_km": 2.74,
+        "pct_villages_under_5km_highway": 86.9
+      },
       "_ref": "./states/bihar.json"
     },
     {
       "state": "Chandigarh",
       "state_slug": "chandigarh",
       "total_districts": 1,
+      "analytics": {
+        "avg_infrastructure_score": 91.4,
+        "avg_phc_distance_km": 2.07,
+        "pct_villages_under_5km_highway": 91.1
+      },
       "_ref": "./states/chandigarh.json"
     },
     {
       "state": "Chhattisgarh",
       "state_slug": "chhattisgarh",
       "total_districts": 16,
+      "analytics": {
+        "avg_infrastructure_score": 59.2,
+        "avg_phc_distance_km": 8.61,
+        "pct_villages_under_5km_highway": 52.9
+      },
       "_ref": "./states/chhattisgarh.json"
     },
     {
       "state": "Dadra and Nagar Haveli",
       "state_slug": "dadra_and_nagar_haveli",
       "total_districts": 1,
+      "analytics": {
+        "avg_infrastructure_score": 91.5,
+        "avg_phc_distance_km": 3.98,
+        "pct_villages_under_5km_highway": 98.9
+      },
       "_ref": "./states/dadra_and_nagar_haveli.json"
     },
     {
       "state": "Daman and Diu",
       "state_slug": "daman_and_diu",
       "total_districts": 2,
+      "analytics": {
+        "avg_infrastructure_score": 96.7,
+        "avg_phc_distance_km": 1.68,
+        "pct_villages_under_5km_highway": 100.0
+      },
       "_ref": "./states/daman_and_diu.json"
     },
     {
       "state": "Delhi",
       "state_slug": "delhi",
       "total_districts": 1,
+      "analytics": {
+        "avg_infrastructure_score": 91.3,
+        "avg_phc_distance_km": 2.87,
+        "pct_villages_under_5km_highway": 94.0
+      },
       "_ref": "./states/delhi.json"
     },
     {
       "state": "Goa",
       "state_slug": "goa",
       "total_districts": 2,
+      "analytics": {
+        "avg_infrastructure_score": 80.8,
+        "avg_phc_distance_km": 6.08,
+        "pct_villages_under_5km_highway": 86.0
+      },
       "_ref": "./states/goa.json"
     },
     {
       "state": "Gujarat",
       "state_slug": "gujarat",
       "total_districts": 25,
+      "analytics": {
+        "avg_infrastructure_score": 81.1,
+        "avg_phc_distance_km": 5.28,
+        "pct_villages_under_5km_highway": 83.4
+      },
       "_ref": "./states/gujarat.json"
     },
     {
       "state": "Haryana",
       "state_slug": "haryana",
       "total_districts": 19,
+      "analytics": {
+        "avg_infrastructure_score": 80.3,
+        "avg_phc_distance_km": 4.61,
+        "pct_villages_under_5km_highway": 79.0
+      },
       "_ref": "./states/haryana.json"
     },
     {
       "state": "Himachal Pradesh",
       "state_slug": "himachal_pradesh",
       "total_districts": 12,
+      "analytics": {
+        "avg_infrastructure_score": 74.1,
+        "avg_phc_distance_km": 6.1,
+        "pct_villages_under_5km_highway": 72.6
+      },
       "_ref": "./states/himachal_pradesh.json"
     },
     {
       "state": "Jammu and Kashmir",
       "state_slug": "jammu_and_kashmir",
       "total_districts": 14,
+      "analytics": {
+        "avg_infrastructure_score": 55.1,
+        "avg_phc_distance_km": 11.92,
+        "pct_villages_under_5km_highway": 54.2
+      },
       "_ref": "./states/jammu_and_kashmir.json"
     },
     {
       "state": "Jharkhand",
       "state_slug": "jharkhand",
       "total_districts": 22,
+      "analytics": {
+        "avg_infrastructure_score": 81.1,
+        "avg_phc_distance_km": 5.62,
+        "pct_villages_under_5km_highway": 84.6
+      },
       "_ref": "./states/jharkhand.json"
     },
     {
       "state": "Karnataka",
       "state_slug": "karnataka",
       "total_districts": 27,
+      "analytics": {
+        "avg_infrastructure_score": 82.8,
+        "avg_phc_distance_km": 5.77,
+        "pct_villages_under_5km_highway": 88.8
+      },
       "_ref": "./states/karnataka.json"
     },
     {
       "state": "Kerala",
       "state_slug": "kerala",
       "total_districts": 14,
+      "analytics": {
+        "avg_infrastructure_score": 95.9,
+        "avg_phc_distance_km": 1.81,
+        "pct_villages_under_5km_highway": 99.0
+      },
       "_ref": "./states/kerala.json"
     },
     {
       "state": "Lakshadweep",
       "state_slug": "lakshadweep",
       "total_districts": 1,
+      "analytics": {
+        "avg_infrastructure_score": 5.0,
+        "avg_phc_distance_km": 70.68,
+        "pct_villages_under_5km_highway": 0.0
+      },
       "_ref": "./states/lakshadweep.json"
     },
     {
       "state": "Madhya Pradesh",
       "state_slug": "madhya_pradesh",
       "total_districts": 48,
+      "analytics": {
+        "avg_infrastructure_score": 74.1,
+        "avg_phc_distance_km": 6.73,
+        "pct_villages_under_5km_highway": 75.2
+      },
       "_ref": "./states/madhya_pradesh.json"
     },
     {
       "state": "Maharashtra",
       "state_slug": "maharashtra",
       "total_districts": 34,
+      "analytics": {
+        "avg_infrastructure_score": 83.0,
+        "avg_phc_distance_km": 4.84,
+        "pct_villages_under_5km_highway": 85.4
+      },
       "_ref": "./states/maharashtra.json"
     },
     {
       "state": "Manipur",
       "state_slug": "manipur",
       "total_districts": 9,
+      "analytics": {
+        "avg_infrastructure_score": 67.8,
+        "avg_phc_distance_km": 8.13,
+        "pct_villages_under_5km_highway": 68.1
+      },
       "_ref": "./states/manipur.json"
     },
     {
       "state": "Meghalaya",
       "state_slug": "meghalaya",
       "total_districts": 7,
+      "analytics": {
+        "avg_infrastructure_score": 78.2,
+        "avg_phc_distance_km": 4.06,
+        "pct_villages_under_5km_highway": 72.6
+      },
       "_ref": "./states/meghalaya.json"
     },
     {
       "state": "Mizoram",
       "state_slug": "mizoram",
       "total_districts": 8,
+      "analytics": {
+        "avg_infrastructure_score": 75.4,
+        "avg_phc_distance_km": 4.28,
+        "pct_villages_under_5km_highway": 67.9
+      },
       "_ref": "./states/mizoram.json"
     },
     {
       "state": "Nagaland",
       "state_slug": "nagaland",
       "total_districts": 8,
+      "analytics": {
+        "avg_infrastructure_score": 71.8,
+        "avg_phc_distance_km": 6.42,
+        "pct_villages_under_5km_highway": 69.4
+      },
       "_ref": "./states/nagaland.json"
     },
     {
       "state": "Orissa",
       "state_slug": "orissa",
       "total_districts": 30,
+      "analytics": {
+        "avg_infrastructure_score": 73.7,
+        "avg_phc_distance_km": 5.83,
+        "pct_villages_under_5km_highway": 70.7
+      },
       "_ref": "./states/orissa.json"
     },
     {
       "state": "Puducherry",
       "state_slug": "puducherry",
       "total_districts": 4,
+      "analytics": {
+        "avg_infrastructure_score": 94.1,
+        "avg_phc_distance_km": 2.75,
+        "pct_villages_under_5km_highway": 99.2
+      },
       "_ref": "./states/puducherry.json"
     },
     {
       "state": "Punjab",
       "state_slug": "punjab",
       "total_districts": 17,
+      "analytics": {
+        "avg_infrastructure_score": 80.4,
+        "avg_phc_distance_km": 2.69,
+        "pct_villages_under_5km_highway": 71.6
+      },
       "_ref": "./states/punjab.json"
     },
     {
       "state": "Rajasthan",
       "state_slug": "rajasthan",
       "total_districts": 32,
+      "analytics": {
+        "avg_infrastructure_score": 70.8,
+        "avg_phc_distance_km": 6.66,
+        "pct_villages_under_5km_highway": 67.5
+      },
       "_ref": "./states/rajasthan.json"
     },
     {
       "state": "Sikkim",
       "state_slug": "sikkim",
       "total_districts": 4,
+      "analytics": {
+        "avg_infrastructure_score": 59.2,
+        "avg_phc_distance_km": 9.19,
+        "pct_villages_under_5km_highway": 55.2
+      },
       "_ref": "./states/sikkim.json"
     },
     {
       "state": "Tamil Nadu",
       "state_slug": "tamil_nadu",
       "total_districts": 30,
+      "analytics": {
+        "avg_infrastructure_score": 88.3,
+        "avg_phc_distance_km": 4.18,
+        "pct_villages_under_5km_highway": 93.2
+      },
       "_ref": "./states/tamil_nadu.json"
     },
     {
       "state": "Tripura",
       "state_slug": "tripura",
       "total_districts": 4,
+      "analytics": {
+        "avg_infrastructure_score": 86.0,
+        "avg_phc_distance_km": 3.26,
+        "pct_villages_under_5km_highway": 85.1
+      },
       "_ref": "./states/tripura.json"
     },
     {
       "state": "Uttar Pradesh",
       "state_slug": "uttar_pradesh",
       "total_districts": 70,
+      "analytics": {
+        "avg_infrastructure_score": 77.9,
+        "avg_phc_distance_km": 4.3,
+        "pct_villages_under_5km_highway": 73.0
+      },
       "_ref": "./states/uttar_pradesh.json"
     },
     {
       "state": "Uttaranchal",
       "state_slug": "uttaranchal",
       "total_districts": 13,
+      "analytics": {
+        "avg_infrastructure_score": 78.3,
+        "avg_phc_distance_km": 3.75,
+        "pct_villages_under_5km_highway": 71.5
+      },
       "_ref": "./states/uttaranchal.json"
     },
     {
       "state": "West Bengal",
       "state_slug": "west_bengal",
       "total_districts": 19,
+      "analytics": {
+        "avg_infrastructure_score": 87.8,
+        "avg_phc_distance_km": 2.98,
+        "pct_villages_under_5km_highway": 87.6
+      },
       "_ref": "./states/west_bengal.json"
     }
   ]

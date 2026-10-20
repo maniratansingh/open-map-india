@@ -1,8 +1,8 @@
 /**
- * India Universal Geocompute Engine - Zero-Dependency JS SDK
- * Works directly in Browser, React, React Native, Node.js, and Bun.
+ * OpenMapIndia - Zero-Dependency JS SDK
+ * Precomputed Geocompute, Rural Routing & Infrastructure Intelligence for India
  */
-class IndiaGeoEngine {
+class OpenMapIndia {
   constructor(cdnBase = "https://cdn.jsdelivr.net/gh/<owner>/<repo>@main/api/v1") {
     this.cdnBase = cdnBase;
     this.cache = new Map();
@@ -13,12 +13,12 @@ class IndiaGeoEngine {
     return res.json();
   }
 
-  async getStateDossier(stateSlug) {
+  async getState(stateSlug) {
     const res = await fetch(`${this.cdnBase}/states/${stateSlug}.json`);
     return res.json();
   }
 
-  async getDistrictPackage(stateSlug, districtSlug) {
+  async getDistrict(stateSlug, districtSlug) {
     const key = `${stateSlug}:${districtSlug}`;
     if (this.cache.has(key)) return this.cache.get(key);
 
@@ -29,10 +29,10 @@ class IndiaGeoEngine {
   }
 
   async findVillage(stateSlug, districtSlug, query) {
-    const pkg = await this.getDistrictPackage(stateSlug, districtSlug);
+    const pkg = await this.getDistrict(stateSlug, districtSlug);
     const q = query.toLowerCase().trim();
     return pkg.villages.find(v => v.name.toLowerCase() === q || String(v.id) === q);
   }
 }
 
-if (typeof module !== 'undefined') module.exports = IndiaGeoEngine;
+if (typeof module !== 'undefined') module.exports = OpenMapIndia;

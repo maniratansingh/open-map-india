@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Step 2: Universal District Precompute Engine (High-Performance Vectorized)
-Spatially clusters all 374,504 settlements, 128,062 healthcare points, and 406,119 highway corridors
-into 594+ District files, precomputing nearest emergency and highway vectors.
+Step 2 (Enriched): Universal District Precompute Engine with Infrastructure Analytics
+Spatially clusters settlements, healthcare points, and highways into 594+ District files,
+precomputing nearest emergency/highway vectors AND district-wide infrastructure analytics.
 """
 
 import gzip
@@ -29,9 +29,6 @@ def slugify(text):
     return re.sub(r'[-\s]+', '_', text)
 
 def encode_polyline(coords):
-    """
-    Encodes list of (lat, lon) coordinates into Google Polyline format.
-    """
     result = []
     prev_lat = 0
     prev_lon = 0
@@ -51,7 +48,7 @@ def encode_polyline(coords):
     return "".join(result)
 
 def haversine_m(lat1, lon1, lat2, lon2):
-    R = 6371000.0  # Earth radius in meters
+    R = 6371000.0
     phi1, phi2 = math.radians(lat1), math.radians(lat2)
     dphi = math.radians(lat2 - lat1)
     dlam = math.radians(lon2 - lon1)
@@ -68,7 +65,7 @@ def to_cartesian(lat, lon):
 
 def main():
     print("=" * 65)
-    print("🌍 Starting All-India District Precompute Engine (Vectorized)")
+    print("🇮🇳 OpenMapIndia: District Precompute & Analytics Engine")
     print("=" * 65)
     start_time = time.time()
 
@@ -106,7 +103,7 @@ def main():
     dist_kdtree = cKDTree(to_cartesian(dist_c_arr[:, 0], dist_c_arr[:, 1]))
 
     # 2. Load Healthcare Facilities
-    print("2️⃣  Loading Health Facilities & Building Spatial Index...")
+    print("2️⃣  Loading Health Facilities & Spatial Index...")
     health_records = []
     with gzip.open(HEALTH_GZ, "rt", encoding="utf-8") as f:
         for line in f:
@@ -119,7 +116,7 @@ def main():
     health_kdtree = cKDTree(health_cartesian)
 
     # 3. Load Highways & Sample Key Cut Points
-    print("3️⃣  Loading Highway Corridors & Sampling Junction Points...")
+    print("3️⃣  Loading Highway Corridors & Sampling Cut Points...")
     highway_meta = []
     hw_sample_coords = []
     with gzip.open(HIGHWAYS_GZ, "rt", encoding="utf-8") as f:
@@ -128,37 +125,31 @@ def main():
             coords = h['coords']
             ref = h.get('ref') or h.get('name') or 'Arterial Road'
             grade = h.get('grade', 'primary')
-            # Sample start, middle, and end coordinates
             step = max(1, len(coords) // 4)
             for idx in range(0, len(coords), step):
                 pt = coords[idx]
                 hw_sample_coords.append(pt)
                 highway_meta.append({'ref': ref, 'grade': grade, 'coord': pt})
 
-    print(f"Sampled {len(hw_sample_coords):,} highway access/junction nodes.")
+    print(f"Sampled {len(hw_sample_coords):,} highway access nodes.")
     hw_coords_arr = np.array(hw_sample_coords, dtype=np.float32)
     hw_cartesian = to_cartesian(hw_coords_arr[:, 0], hw_coords_arr[:, 1])
     hw_kdtree = cKDTree(hw_cartesian)
 
-    # 4. Stream Settlements & Vectorized Binning into Districts
-    print("4️⃣  Loading Villages & Performing Spatial Partitioning...")
+    # 4. Stream Settlements & Partition
+    print("4️⃣  Loading Settlements & Performing Spatial Partitioning...")
     all_villages = []
     with gzip.open(VILLAGES_GZ, "rt", encoding="utf-8") as f:
         for line in f:
             all_villages.append(json.loads(line))
 
     total_v = len(all_villages)
-    print(f"Loaded {total_v:,} settlements. Vectorizing coordinates...")
-
     v_lats = np.array([v['lat'] for v in all_villages], dtype=np.float32)
     v_lons = np.array([v['lon'] for v in all_villages], dtype=np.float32)
     v_points = points(v_lons, v_lats)
 
-    t_tree_start = time.time()
     res = tree.query(v_points, predicate='intersects')
-    print(f"Spatial STRtree query finished in {time.time()-t_tree_start:.2f}s! Matched {res.shape[1]:,} intersections.")
 
-    # Map each village to district
     district_villages = defaultdict(list)
     assigned_indices = set()
 
@@ -169,10 +160,8 @@ def main():
             district_villages[dist_idx].append(all_villages[v_idx])
             assigned_indices.add(v_idx)
 
-    # Assign leftover boundary points to nearest district centroid
     unassigned = [i for i in range(total_v) if i not in assigned_indices]
     if unassigned:
-        print(f"Assigning {len(unassigned):,} borderline/coastal settlements to nearest district...")
         unassigned_lats = v_lats[unassigned]
         unassigned_lons = v_lons[unassigned]
         unassigned_cart = to_cartesian(unassigned_lats, unassigned_lons)
@@ -180,10 +169,10 @@ def main():
         for idx, dist_idx in enumerate(nearest_dist_ids):
             district_villages[dist_idx].append(all_villages[unassigned[idx]])
 
-    print(f"✅ 100% of {total_v:,} settlements binned across {len(district_villages)} districts.")
+    print(f"✅ All {total_v:,} settlements binned across districts.")
 
-    # 5. Precompute Vectors and Write District Files
-    print("5️⃣  Precomputing Routes & Generating District Nodes...")
+    # 5. Precompute Vectors & Infrastructure Analytics
+    print("5️⃣  Precomputing Routes & District Infrastructure Analytics...")
     generated_count = 0
 
     for dist_idx, dist in enumerate(districts):
@@ -201,21 +190,25 @@ def main():
         sub_lons = np.array([v['lon'] for v in v_list], dtype=np.float32)
         sub_cartesian = to_cartesian(sub_lats, sub_lons)
 
-        # Vectorized KD-tree queries (sub-millisecond)
         _, nearest_health_indices = health_kdtree.query(sub_cartesian, k=1)
         _, nearest_hw_indices = hw_kdtree.query(sub_cartesian, k=1)
 
         enriched_villages = []
+        health_distances_m = []
+        highway_distances_m = []
+
         for i, v in enumerate(v_list):
             h_idx = nearest_health_indices[i]
             h_obj = health_records[h_idx]
             h_dist = int(haversine_m(v['lat'], v['lon'], h_obj['lat'], h_obj['lon']) * 1.3)
             h_poly = encode_polyline([(v['lat'], v['lon']), (h_obj['lat'], h_obj['lon'])])
+            health_distances_m.append(h_dist)
 
             hw_idx = nearest_hw_indices[i]
             hw_obj = highway_meta[hw_idx]
             hw_dist = int(haversine_m(v['lat'], v['lon'], hw_obj['coord'][0], hw_obj['coord'][1]) * 1.25)
             hw_poly = encode_polyline([(v['lat'], v['lon']), (hw_obj['coord'][0], hw_obj['coord'][1])])
+            highway_distances_m.append(hw_dist)
 
             enriched_villages.append({
                 'id': v['id'],
@@ -239,13 +232,45 @@ def main():
                 }
             })
 
+        # Calculate District Infrastructure Analytics
+        h_arr = np.array(health_distances_m)
+        hw_arr = np.array(highway_distances_m)
+        v_count = len(enriched_villages)
+
+        avg_health_km = round(float(np.mean(h_arr)) / 1000.0, 2)
+        median_health_km = round(float(np.median(h_arr)) / 1000.0, 2)
+        avg_highway_km = round(float(np.mean(hw_arr)) / 1000.0, 2)
+        median_highway_km = round(float(np.median(hw_arr)) / 1000.0, 2)
+
+        pct_hw_under_2km = round(float(np.sum(hw_arr <= 2000)) / v_count * 100.0, 1)
+        pct_hw_under_5km = round(float(np.sum(hw_arr <= 5000)) / v_count * 100.0, 1)
+        pct_phc_under_5km = round(float(np.sum(h_arr <= 5000)) / v_count * 100.0, 1)
+
+        # Composite Infrastructure Connectivity Score (0 - 100)
+        # Higher score = closer to highways and hospitals
+        raw_score = (100.0 - min(100.0, avg_health_km * 4.0)) * 0.5 + pct_hw_under_5km * 0.5
+        infrastructure_score = round(max(5.0, min(99.0, raw_score)), 1)
+
+        analytics = {
+            'infrastructure_score': infrastructure_score,
+            'avg_phc_distance_km': avg_health_km,
+            'median_phc_distance_km': median_health_km,
+            'avg_highway_distance_km': avg_highway_km,
+            'median_highway_distance_km': median_highway_km,
+            'pct_villages_under_2km_highway': pct_hw_under_2km,
+            'pct_villages_under_5km_highway': pct_hw_under_5km,
+            'pct_villages_under_5km_phc': pct_phc_under_5km
+        }
+
         output_doc = {
+            'project': "OpenMapIndia",
             'district': dist['district'],
             'state': dist['state'],
             'state_slug': state_slug,
             'district_slug': dist_slug,
             'bbox': dist['bbox'],
-            'total_settlements': len(enriched_villages),
+            'total_settlements': v_count,
+            'analytics': analytics,
             'villages': enriched_villages,
             '_links': {
                 'state': f"../../states/{state_slug}.json",
@@ -258,11 +283,11 @@ def main():
 
         generated_count += 1
         if generated_count % 50 == 0:
-            print(f"  Generated {generated_count}/{len(districts)} districts...")
+            print(f"  Generated {generated_count}/{len(districts)} districts with analytics...")
 
     total_time = time.time() - start_time
     print("=" * 65)
-    print(f"🎉 Complete! Successfully generated {generated_count} District Packages in {total_time:.1f}s ({total_time/60:.2f} mins)!")
+    print(f"🎉 Complete! Generated {generated_count} District Packages with Analytics in {total_time:.1f}s!")
     print("=" * 65)
 
 if __name__ == "__main__":

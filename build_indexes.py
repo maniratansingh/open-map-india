@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """
-Step 3: Universal Index and SDK Generator
-Traverses the generated `api/v1/districts` directory and generates:
-- `api/v1/states/<state_slug>.json` (State dossiers linking to all its districts)
-- `api/v1/india.json` (National root linking to all 36 states/UTs)
-- `sdk/index.js` (Zero-dependency JavaScript client)
-- `sdk/index.py` (Zero-dependency Python client)
+Step 3 (Enriched): OpenMapIndia Universal Index and SDK Generator
+Aggregates district infrastructure analytics up to State and National levels,
+and generates zero-dependency SDKs for JavaScript and Python.
 """
 
 import json
 import os
 import glob
+import numpy as np
 
 API_BASE = "api/v1"
 DISTRICTS_DIR = os.path.join(API_BASE, "districts")
@@ -23,12 +21,15 @@ os.makedirs(SDK_DIR, exist_ok=True)
 
 def main():
     print("=" * 60)
-    print("📚 Generating National, State Indexes and SDKs...")
+    print("🇮🇳 OpenMapIndia: Generating Rollup Indexes & SDKs...")
     print("=" * 60)
 
     states_map = {}
     total_districts = 0
     total_villages = 0
+    all_scores = []
+    all_phc_dists = []
+    all_hw_pcts = []
 
     state_dirs = sorted([d for d in os.listdir(DISTRICTS_DIR) if os.path.isdir(os.path.join(DISTRICTS_DIR, d))])
 
@@ -38,42 +39,66 @@ def main():
         
         state_districts = []
         state_name = None
+        state_scores = []
+        state_phc_km = []
+        state_hw_pct = []
 
         for fpath in dist_files:
             with open(fpath, "r", encoding="utf-8") as f:
                 d = json.load(f)
             state_name = d['state']
             v_count = d['total_settlements']
+            analytics = d.get('analytics', {})
+
             total_villages += v_count
             total_districts += 1
+
+            if analytics:
+                s_score = analytics.get('infrastructure_score', 50.0)
+                p_km = analytics.get('avg_phc_distance_km', 5.0)
+                h_pct = analytics.get('pct_villages_under_5km_highway', 50.0)
+                state_scores.append(s_score)
+                state_phc_km.append(p_km)
+                state_hw_pct.append(h_pct)
+                all_scores.append(s_score)
+                all_phc_dists.append(p_km)
+                all_hw_pcts.append(h_pct)
 
             state_districts.append({
                 'district': d['district'],
                 'district_slug': d['district_slug'],
                 'bbox': d['bbox'],
                 'total_settlements': v_count,
+                'analytics': analytics,
                 '_ref': f"../districts/{state_slug}/{d['district_slug']}.json"
             })
 
+        state_analytics = {
+            'avg_infrastructure_score': round(float(np.mean(state_scores)), 1) if state_scores else 50.0,
+            'avg_phc_distance_km': round(float(np.mean(state_phc_km)), 2) if state_phc_km else 5.0,
+            'pct_villages_under_5km_highway': round(float(np.mean(state_hw_pct)), 1) if state_hw_pct else 50.0
+        }
+
         states_map[state_slug] = {
+            'project': "OpenMapIndia",
             'state': state_name or state_slug.replace('_', ' ').title(),
             'state_slug': state_slug,
             'total_districts': len(state_districts),
+            'analytics': state_analytics,
             'districts': state_districts,
             '_links': {
                 'national': "../india.json"
             }
         }
 
-        # Write state file
         state_out = os.path.join(STATES_DIR, f"{state_slug}.json")
         with open(state_out, "w", encoding="utf-8") as f:
             json.dump(states_map[state_slug], f, separators=(',', ':'))
 
-    print(f"Generated {len(states_map)} State dossiers.")
+    print(f"Generated {len(states_map)} State dossiers with infrastructure rollups.")
 
-    # Write national root
     national_doc = {
+        'project': "OpenMapIndia",
         'version': "1.0.0",
         'country': "India",
         'iso': "IND",
@@ -82,11 +107,17 @@ def main():
             'total_districts': total_districts,
             'total_settlements': total_villages
         },
+        'national_analytics': {
+            'avg_infrastructure_score': round(float(np.mean(all_scores)), 1) if all_scores else 50.0,
+            'avg_distance_to_phc_km': round(float(np.mean(all_phc_dists)), 2) if all_phc_dists else 5.0,
+            'avg_villages_under_5km_highway_pct': round(float(np.mean(all_hw_pcts)), 1) if all_hw_pcts else 50.0
+        },
         'states': [
             {
                 'state': s['state'],
                 'state_slug': s['state_slug'],
                 'total_districts': s['total_districts'],
+                'analytics': s['analytics'],
                 '_ref': f"./states/{s['state_slug']}.json"
             }
             for s in states_map.values()
@@ -100,10 +131,10 @@ def main():
 
     # Generate JavaScript SDK
     js_sdk = """/**
- * India Universal Geocompute Engine - Zero-Dependency JS SDK
- * Works directly in Browser, React, React Native, Node.js, and Bun.
+ * OpenMapIndia - Zero-Dependency JS SDK
+ * Precomputed Geocompute, Rural Routing & Infrastructure Intelligence for India
  */
-class IndiaGeoEngine {
+class OpenMapIndia {
   constructor(cdnBase = "https://cdn.jsdelivr.net/gh/<owner>/<repo>@main/api/v1") {
     this.cdnBase = cdnBase;
     this.cache = new Map();
@@ -114,12 +145,12 @@ class IndiaGeoEngine {
     return res.json();
   }
 
-  async getStateDossier(stateSlug) {
+  async getState(stateSlug) {
     const res = await fetch(`${this.cdnBase}/states/${stateSlug}.json`);
     return res.json();
   }
 
-  async getDistrictPackage(stateSlug, districtSlug) {
+  async getDistrict(stateSlug, districtSlug) {
     const key = `${stateSlug}:${districtSlug}`;
     if (this.cache.has(key)) return this.cache.get(key);
 
@@ -130,25 +161,26 @@ class IndiaGeoEngine {
   }
 
   async findVillage(stateSlug, districtSlug, query) {
-    const pkg = await this.getDistrictPackage(stateSlug, districtSlug);
+    const pkg = await this.getDistrict(stateSlug, districtSlug);
     const q = query.toLowerCase().trim();
     return pkg.villages.find(v => v.name.toLowerCase() === q || String(v.id) === q);
   }
 }
 
-if (typeof module !== 'undefined') module.exports = IndiaGeoEngine;
+if (typeof module !== 'undefined') module.exports = OpenMapIndia;
 """
     with open(os.path.join(SDK_DIR, "index.js"), "w", encoding="utf-8") as f:
         f.write(js_sdk)
 
     # Generate Python SDK
     py_sdk = """\"\"\"
-India Universal Geocompute Engine - Zero-Dependency Python SDK
+OpenMapIndia - Zero-Dependency Python SDK
+Precomputed Geocompute, Rural Routing & Infrastructure Intelligence for India
 \"\"\"
 import json
 import urllib.request
 
-class IndiaGeoEngine:
+class OpenMapIndia:
     def __init__(self, cdn_base="https://cdn.jsdelivr.net/gh/<owner>/<repo>@main/api/v1"):
         self.cdn_base = cdn_base.rstrip('/')
         self._cache = {}
@@ -181,9 +213,9 @@ class IndiaGeoEngine:
     with open(os.path.join(SDK_DIR, "index.py"), "w", encoding="utf-8") as f:
         f.write(py_sdk)
 
-    print(f"Generated SDKs in {SDK_DIR}/.")
+    print(f"Updated SDKs in {SDK_DIR}/.")
     print("=" * 60)
-    print("✅ All Indexes and SDKs Generated Successfully!")
+    print("✅ OpenMapIndia: Indexes & SDKs Updated Successfully!")
     print("=" * 60)
 
 if __name__ == "__main__":

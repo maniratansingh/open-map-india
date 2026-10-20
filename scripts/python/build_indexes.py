@@ -10,6 +10,9 @@ import os
 import glob
 import numpy as np
 
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+os.chdir(REPO_ROOT)
+
 API_BASE = "api/v1"
 DISTRICTS_DIR = os.path.join(API_BASE, "districts")
 STATES_DIR = os.path.join(API_BASE, "states")

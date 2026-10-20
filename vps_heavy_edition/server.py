@@ -35,6 +35,28 @@ class VPSAPIHandler(SimpleHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
 
+        # 0. Health check endpoint
+        if path == "/health":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            status_obj = {
+                "status": "healthy",
+                "edition": "VPS_HEAVY_EDITION",
+                "version": "1.0.0",
+                "service": "OpenMapIndia VPS High-Performance Engine",
+                "osrm_backend": os.environ.get("OSRM_BACKEND", "https://router.project-osrm.org"),
+                "endpoints": [
+                    "/health",
+                    "/route?from_lat=<lat>&from_lon=<lon>&to_lat=<lat>&to_lon=<lon>",
+                    "/api/v1/full_routes/<state>/<district>.json",
+                    "/api/v1/districts/<state>/<district>.json",
+                    "/api/v1/search_index.json"
+                ]
+            }
+            self.wfile.write(json.dumps(status_obj, indent=2).encode("utf-8"))
+            return
+
         # 1. Dynamic On-Demand Routing Engine
         if path == "/route":
             params = urllib.parse.parse_qs(parsed.query)
@@ -44,7 +66,8 @@ class VPSAPIHandler(SimpleHTTPRequestHandler):
                 to_lat = float(params.get("to_lat", [0])[0])
                 to_lon = float(params.get("to_lon", [0])[0])
 
-                osrm_url = f"https://router.project-osrm.org/route/v1/driving/{from_lon},{from_lat};{to_lon},{to_lat}?overview=full&geometries=geojson"
+                backend = os.environ.get("OSRM_BACKEND", "https://router.project-osrm.org")
+                osrm_url = f"{backend}/route/v1/driving/{from_lon},{from_lat};{to_lon},{to_lat}?overview=full&geometries=geojson"
                 req = urllib.request.Request(osrm_url, headers={"User-Agent": "OpenMapIndia-VPS/1.0"})
                 with urllib.request.urlopen(req, timeout=8) as r:
                     res_data = r.read()

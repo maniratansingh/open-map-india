@@ -11,6 +11,9 @@ import sys
 import time
 import osmium
 
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+os.chdir(REPO_ROOT)
+
 PBF_PATH = "india_tiles/india.osm.pbf"
 OUT_FILE = "data/extracted/highways.jsonl.gz"
 

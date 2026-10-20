@@ -7,8 +7,8 @@
 
 set -euo pipefail
 
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$BASE_DIR"
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$REPO_ROOT"
 
 echo "=================================================================="
 echo "🔄 OpenMapIndia: Starting Dataset Refresh Pipeline"
@@ -19,7 +19,7 @@ echo "=================================================================="
 if [[ -f .venv/bin/activate ]]; then
     source .venv/bin/activate
 else
-    echo "❌ Error: Virtual environment .venv not found. Run ./run_pipeline.sh first."
+    echo "❌ Error: Virtual environment .venv not found. Run ./scripts/bash/run_pipeline.sh first."
     exit 1
 fi
 
@@ -34,19 +34,19 @@ rm -rf data/extracted/*.gz
 
 # 4. Extract Villages and Health Infrastructure
 echo "▶️ Step 3: Extracting fresh settlements & healthcare facilities..."
-python3 extract_all.py
+python3 scripts/python/extract_all.py
 
 # 5. Extract Major Highways
 echo "▶️ Step 4: Extracting fresh arterial highways..."
-python3 extract_highways.py
+python3 scripts/python/extract_highways.py
 
 # 6. Precompute District Packages & Analytics
 echo "▶️ Step 5: Precomputing district vectors & infrastructure analytics..."
-python3 precompute_districts.py
+python3 scripts/python/precompute_districts.py
 
 # 7. Generate National & State Indexes + SDKs
 echo "▶️ Step 6: Updating state & national rollups..."
-python3 build_indexes.py
+python3 scripts/python/build_indexes.py
 
 # 8. Git Commit (Optional prompt or automated)
 echo "=================================================================="

@@ -19,9 +19,10 @@ DISTRICTS_DIR = os.path.join(BASE_DIR, "api", "v1", "districts")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "data", "full_routes")
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+OSRM_BACKEND = os.environ.get("OSRM_BACKEND", "https://router.project-osrm.org")
 
 def fetch_dense_route(from_coords, to_coords):
-    url = f"https://router.project-osrm.org/route/v1/driving/{from_coords[1]},{from_coords[0]};{to_coords[1]},{to_coords[0]}?overview=full&geometries=geojson"
+    url = f"{OSRM_BACKEND}/route/v1/driving/{from_coords[1]},{from_coords[0]};{to_coords[1]},{to_coords[0]}?overview=full&geometries=geojson"
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "OpenMapIndia-VPS-Batch/1.0"})
         with urllib.request.urlopen(req, timeout=6) as r:

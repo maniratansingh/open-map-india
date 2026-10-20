@@ -1,137 +1,171 @@
 # 🖥️ OpenMapIndia — VPS Heavy Edition (Branch: `vps-heavy`)
 
+[![Branch: vps-heavy](https://img.shields.io/badge/Branch-vps--heavy-purple.svg)](https://github.com/maniratansingh/open-map-india/tree/vps-heavy)
+[![Edition: VPS Heavy Server](https://img.shields.io/badge/Edition-VPS%20Heavy%20Routing%20Engine-blue.svg)](vps_heavy_edition/)
+[![Zero External API](https://img.shields.io/badge/Routing-Self--Hosted%20%2F%20Zero--External-brightgreen.svg)](#-architecture-overview)
+[![Districts Indexed](https://img.shields.io/badge/Districts%20Indexed-594%20Districts-orange.svg)](INDIA_DIRECTORY.md)
+[![License: ODbL / MIT](https://img.shields.io/badge/License-ODbL%20%2F%20MIT-blue.svg)](#-license)
+
 > **Dedicated High-Compute & Full-Resolution Routing Engine Branch.**  
-> Contains the high-performance Python server, batch builders, and configurations to run multi-gigabyte dense turn-by-turn road calculations on a VPS or local machine.  
+> Contains the high-performance Python server, batch builders, and configurations to generate and serve multi-gigabyte dense turn-by-turn road curvatures, dynamic live routing, and high-throughput infrastructure analytics for all of India.
 > 
-> * 🌐 Looking for the lightweight 100% GitHub-native release? Switch to the [**`main`**](https://github.com/maniratansingh/open-map-india/tree/main) branch.
+> 🌐 **Looking for the lightweight 100% GitHub-native release?**  
+> Switch to the [**`main` branch**](https://github.com/maniratansingh/open-map-india/tree/main) for the zero-cost, static CDN-powered edition (≈ 22 MB).
 
 ---
 
-## 🚀 Live Interactive Demo (Localhost & GitHub Pages)
+## 🏗️ Architecture: GitHub Edition vs. VPS Heavy Edition
 
-* **Localhost Preview (Active Now)**:  
-  👉 **[http://localhost:8000/](http://localhost:8000/)**
-* **GitHub Pages (After Push)**:  
-  👉 **`https://maniratansingh.github.io/open-map-india/`**
-
-### What You Can Do in the Live Demo:
-* **Interactive Dropdowns**: Select any of India's **35 States & UTs** $\rightarrow$ select any of **594 Districts** $\rightarrow$ search across **373,988 Villages**.
-* **Instant Visual Vector Draw**: High-speed WebGL map plots the village, its nearest emergency hospital (with distance and route), and its nearest arterial highway connection.
-* **District Infrastructure Analytics**: Live scores measuring healthcare accessibility and highway connectivity for every district in India.
-
----
-
-## 🛡️ 100% Zero-External API Architecture (Git-Native & Bulletproof)
-
-OpenMapIndia is strictly designed to be **100% self-contained on GitHub Pages** with **ZERO external API dependencies**:
-* **Zero External Routing APIs**: We do NOT proxy or depend on third-party routing services (like OSRM demo servers or Google Directions). All rural health vectors and highway connections are precomputed offline and served statically from this Git repository.
-* **Zero External Geocoders**: Universal predictive search runs 100% client-side from [`api/v1/search_index.json`](file:///Users/mrps/Documents/MAP/api/v1/search_index.json) in 0ms without hitting rate-limited geocoding APIs.
-* **Strict Indian Territorial Boundary**: Enforced bounding box (`68.0°E` to `97.5°E`, `6.5°N` to `37.2°N`). Foreign coordinates outside India are hard-blocked at the boundary.
-* **National Highway Corridor Solver**: Point A ➔ Point B navigation uses an in-browser highway corridor algorithm that routes across India's National Highway network connecting district hubs offline.
-* **Heavy VPS Edition (Isolated)**: For developers who want to run a multi-gigabyte dense turn-by-turn road server on their own VPS or localhost, see the isolated [`vps_heavy_edition/`](file:///Users/mrps/Documents/MAP/vps_heavy_edition/) folder (strictly excluded from Git to prevent repository bloat).
-
----
-
-## 📚 Complete API Reference & Documentation
-
-* **Whole India Master Directory (All 594 Districts A-to-Z + National Rankings)**:  
-  👉 Browse the [**INDIA_DIRECTORY.md**](INDIA_DIRECTORY.md) for the national master index and state rankings!
-* **State-Wise District Directory (State-by-State Grouping)**:  
-  👉 Browse the [**DISTRICT_DIRECTORY.md**](DISTRICT_DIRECTORY.md) for state-by-state district tables!
-* **API Documentation & Schema Reference**:  
-  👉 Read the [**API_REFERENCE.md**](API_REFERENCE.md)
-
----
-
-## 📊 Dataset Scale & Infrastructure Analytics
-
-| Metric | Precomputed Coverage |
-| :--- | :--- |
-| **States & Union Territories** | **35 States & UTs** (`api/v1/states/*.json`) |
-| **Districts Indexed** | **594 Districts** (`api/v1/districts/*/*.json`) |
-| **Settlements (Villages, Towns, Hamlets)** | **373,988 Settlements** |
-| **Healthcare Facilities (PHCs, CHCs, Hospitals, Clinics)** | **128,062 Facilities** |
-| **Major Arterial Highway Segments (NH / SH)** | **406,119 Segments** |
-| **National Average Distance to Healthcare** | **6.24 km** |
-| **Villages within 5km of an Arterial Highway** | **77.4%** |
-| **Total Compressed Transfer Size** | **≈ 22 MB** |
-| **Hosting & API Cost** | **$0 / Free forever on GitHub** |
-
----
-
-## ⚡ Quickstart for Developers
-
-### 1. JavaScript / TypeScript (Browser, Node, React, React Native)
-
-```javascript
-// Drop into any project with zero dependencies:
-async function getVillageRouting(stateSlug, districtSlug, villageName) {
-  const CDN = "https://cdn.jsdelivr.net/gh/maniratansingh/open-map-india@main/api/v1";
-  
-  // 1. Fetch the district package (auto-cached by browser & CDN)
-  const res = await fetch(`${CDN}/districts/${stateSlug}/${districtSlug}.json`);
-  const district = await res.json();
-
-  // 2. Instant in-memory lookup (0ms)
-  const village = district.villages.find(v => 
-    v.name.toLowerCase() === villageName.toLowerCase().trim()
-  );
-
-  return {
-    districtAnalytics: district.analytics,
-    village
-  };
-}
-
-// Example:
-getVillageRouting("uttar_pradesh", "basti", "Kalwari").then(data => {
-  console.log("District Score:", data.districtAnalytics.infrastructure_score);
-  console.log("Nearest Hospital:", data.village.precomputed_routing.nearest_health.name);
-  console.log("Road Distance:", data.village.precomputed_routing.nearest_health.distance_m, "meters");
-  console.log("Nearest Highway:", data.village.precomputed_routing.nearest_highway.ref);
-});
+```
+                                  ┌────────────────────────────────────────────────────────┐
+                                  │                  OPENMAPINDIA PLATFORM                 │
+                                  └──────────────────────────┬─────────────────────────────┘
+                                                             │
+                             ┌───────────────────────────────┴───────────────────────────────┐
+                             │                                                               │
+                             ▼                                                               ▼
+             ┌───────────────────────────────┐                               ┌───────────────────────────────┐
+             │       🌐 MAIN BRANCH          │                               │      🖥️ VPS-HEAVY BRANCH       │
+             │   100% Lightweight GitHub     │                               │     Dedicated VPS Heavy       │
+             └───────────────┬───────────────┘                               └───────────────┬───────────────┘
+                             │                                                               │
+             ├── 22 MB Total Footprint                                       ├── Multi-GB Dense Road Storage
+             ├── Static Precomputed Endpoints                                ├── Live Dynamic Road Routing Engine
+             ├── In-Browser Highway Corridor Solver                          ├── Batch Dense Geometry Generator
+             ├── Hosted 100% Free on GitHub Pages                            ├── Self-Hosted on VPS (Ubuntu/Debian)
+             └── Free jsDelivr / Cloudflare CDN                              └── Systemd Daemon & Nginx Reverse Proxy
 ```
 
 ---
 
-### 2. Python (FastAPI, Flask, Pandas, Django)
+## 💻 Recommended VPS Hardware Specifications
 
-```python
-import json
-import urllib.request
+| Deployment Profile | vCPU | RAM | NVMe SSD | Network | Primary Purpose |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Development & Testing** | 2 vCPUs | 4 GB | 40 GB SSD | 1 Gbps | Localhost test, single-state dense batch |
+| **State-Level Production** | 4 vCPUs | 8 GB | 80 GB NVMe | 1 Gbps | High-load state portal, dynamic `/route` |
+| **All-India High-Throughput** | 8 vCPUs | 16 GB | 160 GB NVMe | 2.5 Gbps | All 594 districts, 10,000+ req/sec |
 
-def get_village(state_slug, district_slug, village_name):
-    url = f"https://cdn.jsdelivr.net/gh/maniratansingh/open-map-india@main/api/v1/districts/{state_slug}/{district_slug}.json"
-    with urllib.request.urlopen(url) as r:
-        data = json.loads(r.read().decode())
-    
-    for v in data["villages"]:
-        if v["name"].lower() == village_name.lower().strip():
-            return {"analytics": data["analytics"], "village": v}
-    return None
+*Supported Operating Systems: Ubuntu 22.04 LTS, Ubuntu 24.04 LTS, Debian 12, Rocky Linux 9, Arch Linux.*
 
-res = get_village("maharashtra", "pune", "Talegaon Dabhade")
-print("Analytics:", res["analytics"])
-print("Nearest Hospital:", res["village"]["precomputed_routing"]["nearest_health"])
+---
+
+## 📁 Repository Directory Structure
+
+```
+open-map-india/
+├── README.md                          <-- Master VPS Heavy documentation (this file)
+├── index.html                         <-- High-speed WebGL Interactive Visualizer
+├── DISTRICT_DIRECTORY.md              <-- State-by-State 594 District Catalog
+├── INDIA_DIRECTORY.md                 <-- All-India A-to-Z Master Directory & Rankings
+├── API_REFERENCE.md                   <-- Complete API & Schema Specification
+├── api/
+│   └── v1/
+│       ├── states/                    <-- 35 State packages
+│       ├── districts/                 <-- 594 District datasets (373,988 settlements)
+│       ├── national_corridors.json    <-- Trans-India National Highway topology
+│       └── search_index.json          <-- Universal predictive search database
+├── scripts/
+│   ├── python/                        <-- Extractor and precomputation pipeline
+│   │   ├── extract_all.py             <-- OSM planet extract parser (PHCs, CHCs, places)
+│   │   ├── extract_highways.py        <-- National & State Highway segment indexer
+│   │   ├── precompute_districts.py    <-- District vector & analytics precomputer
+│   │   └── build_indexes.py           <-- National and state index generator
+│   └── bash/                          <-- Automated pipeline execution
+│       ├── run_pipeline.sh            <-- Sequential dataset build workflow
+│       └── update_dataset.sh          <-- Automatic upstream OSM refresh script
+└── vps_heavy_edition/
+    ├── README.md                      <-- In-depth VPS deployment & systemd guide
+    ├── server.py                      <-- Production Python API Server (CORS + Routing)
+    ├── build_full_india.py            <-- Batch builder for multi-GB dense road curves
+    └── data/                          <-- Stored on VPS NVMe disk (Ignored by Git)
+        ├── india.osm.pbf              <-- Raw OpenStreetMap planet extract
+        └── full_routes/               <-- High-density road curves for all 594 districts
 ```
 
 ---
 
-## 🔄 Updating the Dataset (Keeping Data Fresh)
+## 🚀 Quick Deployment Guide on VPS
 
-Whenever OpenStreetMap releases new roads, or new hospitals/bypasses are added to India:
+### 1. Clone the `vps-heavy` Branch
+```bash
+git clone -b vps-heavy https://github.com/maniratansingh/open-map-india.git
+cd open-map-india
+```
+
+### 2. Set Up Virtual Environment & Dependencies
+```bash
+sudo apt update && sudo apt install -y python3-pip python3-venv git curl
+python3 -m venv .venv
+source .venv/bin/activate
+pip install urllib3 requests
+```
+
+### 3. Start the High-Performance API Server
+```bash
+python3 vps_heavy_edition/server.py --port 8080 --host 0.0.0.0
+```
+
+Verify the health check:
+```bash
+curl http://localhost:8080/health
+```
+
+---
+
+## ⚡ Generating Dense Road Curvatures (`build_full_india.py`)
+
+To compute dense turn-by-turn road curves for all villages in a district and store them locally on VPS disk:
 
 ```bash
-./update_dataset.sh
+# Test run for 20 villages in Basti district:
+python3 vps_heavy_edition/build_full_india.py --state uttar_pradesh --district basti --limit 20
+
+# Run complete district:
+python3 vps_heavy_edition/build_full_india.py --state uttar_pradesh --district basti
+
+# Run all 594 districts in the background:
+nohup python3 vps_heavy_edition/build_full_india.py --all > build_full.log 2>&1 &
+tail -f build_full.log
 ```
 
-This single command:
-1. Downloads the newest `india-latest.osm.pbf` diff.
-2. Extracts updated settlements, hospitals, and highways.
-3. Recomputes all 594 district packages and infrastructure analytics.
-4. Updates state and national indexes.
+Generated dense files are saved to `vps_heavy_edition/data/full_routes/<state>/<district>.json`.
+
+---
+
+## 🌐 VPS API Reference & Endpoints
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/health` | `GET` | Server status, version, and routing engine health |
+| `/route?from_lat=...&from_lon=...&to_lat=...&to_lon=...` | `GET` | Dynamic real-time turn-by-turn road route |
+| `/api/v1/full_routes/<state>/<district>.json` | `GET` | Dense turn-by-turn geometries for all district villages |
+| `/api/v1/districts/<state>/<district>.json` | `GET` | Precomputed rural healthcare & highway vector bundle |
+| `/api/v1/search_index.json` | `GET` | Universal national predictive search database |
+
+### Example: Dynamic Turn-by-Turn Routing Request
+```bash
+curl "http://localhost:8080/route?from_lat=26.6394&from_lon=82.6806&to_lat=26.7995&to_lon=82.7981"
+```
+
+---
+
+## ⚙️ Production Deployment (Systemd & Nginx)
+
+For complete instructions on running OpenMapIndia as an automated system service with Nginx reverse proxy, gzip acceleration, SSL (Let's Encrypt), and local offline OSRM Docker container, see:
+
+👉 [**vps_heavy_edition/README.md**](vps_heavy_edition/README.md)
+
+---
+
+## 📚 Master Catalog & Documentation
+
+* **[Whole India Master Directory](INDIA_DIRECTORY.md)** — All 594 districts indexed A-to-Z with national infrastructure rankings.
+* **[State-Wise District Directory](DISTRICT_DIRECTORY.md)** — State-by-state catalog linking to every district dataset.
+* **[API Reference Specification](API_REFERENCE.md)** — Complete schema definition and response models.
+* **[VPS Heavy Edition Deployment Manual](vps_heavy_edition/README.md)** — Systemd, Nginx, Docker, and multi-GB road generation.
 
 ---
 
 ## 📄 License
-Open Data Commons Open Database License (ODbL) / MIT for Code, Frontend, and SDKs.
+Open Data Commons Open Database License (ODbL) / MIT for Code, Frontend, and Server Software.

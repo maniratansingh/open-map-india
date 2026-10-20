@@ -2,6 +2,8 @@
 """
 OpenMapIndia — VPS Heavy Edition Batch Generator
 Generates multi-gigabyte dense turn-by-turn road geometry files district-by-district.
+Optimized for Apple M4 / Multi-Core Linux with Smart Incremental Caching,
+Resumable Execution, Live ETA Progress, and Rich Emergency Transit Metrics.
 Saves directly to `vps_heavy_edition/data/full_routes/` (ignored by Git).
 """
 
@@ -9,6 +11,7 @@ import argparse
 import glob
 import json
 import os
+import shutil
 import sys
 import time
 import urllib.request
@@ -23,33 +26,36 @@ OSRM_BACKEND = os.environ.get("OSRM_BACKEND", "http://router.project-osrm.org")
 
 def fetch_dense_route(from_coords, to_coords):
     url = f"{OSRM_BACKEND}/route/v1/driving/{from_coords[1]},{from_coords[0]};{to_coords[1]},{to_coords[0]}?overview=full&geometries=geojson"
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": "OpenMapIndia-VPS-Batch/1.0"})
-        with urllib.request.urlopen(req, timeout=6) as r:
-            res = json.loads(r.read().decode())
-            if res.get("routes"):
-                rt = res["routes"][0]
-                return {
-                    "coordinates": rt["geometry"]["coordinates"],
-                    "distance_m": round(rt["distance"]),
-                    "duration_sec": round(rt["duration"])
-                }
-    except Exception as inner_e:
-        if url.startswith("https://"):
-            try:
-                fallback_url = url.replace("https://", "http://", 1)
-                req = urllib.request.Request(fallback_url, headers={"User-Agent": "OpenMapIndia-VPS-Batch/1.0"})
-                with urllib.request.urlopen(req, timeout=6) as r:
-                    res = json.loads(r.read().decode())
-                    if res.get("routes"):
-                        rt = res["routes"][0]
-                        return {
-                            "coordinates": rt["geometry"]["coordinates"],
-                            "distance_m": round(rt["distance"]),
-                            "duration_sec": round(rt["duration"])
-                        }
-            except Exception:
-                pass
+    for attempt in range(2):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "OpenMapIndia-VPS-Batch/1.0"})
+            with urllib.request.urlopen(req, timeout=7) as r:
+                res = json.loads(r.read().decode())
+                if res.get("routes"):
+                    rt = res["routes"][0]
+                    return {
+                        "coordinates": rt["geometry"]["coordinates"],
+                        "distance_m": round(rt["distance"]),
+                        "duration_sec": round(rt["duration"])
+                    }
+        except Exception as inner_e:
+            if url.startswith("https://"):
+                try:
+                    fallback_url = url.replace("https://", "http://", 1)
+                    req = urllib.request.Request(fallback_url, headers={"User-Agent": "OpenMapIndia-VPS-Batch/1.0"})
+                    with urllib.request.urlopen(req, timeout=7) as r:
+                        res = json.loads(r.read().decode())
+                        if res.get("routes"):
+                            rt = res["routes"][0]
+                            return {
+                                "coordinates": rt["geometry"]["coordinates"],
+                                "distance_m": round(rt["distance"]),
+                                "duration_sec": round(rt["duration"])
+                            }
+                except Exception:
+                    pass
+            if attempt == 0:
+                time.sleep(1.0)
     return None
 
 def process_village_dense(v):
@@ -106,7 +112,15 @@ def process_village_dense(v):
         }
     }
 
-def process_district(district_file, max_villages=None, force=False):
+def process_district(district_file, max_villages=None, force=False, workers=8):
+    # Free disk check
+    try:
+        free_gb = shutil.disk_usage(OUTPUT_DIR).free / (1024**3)
+        if free_gb < 1.0:
+            print(f"⚠️ Warning: Low disk space ({free_gb:.1f} GB available). Please free disk space.")
+    except Exception:
+        pass
+
     with open(district_file, "r", encoding="utf-8") as f:
         data = json.load(f)
 
@@ -144,30 +158,52 @@ def process_district(district_file, max_villages=None, force=False):
         else:
             to_compute.append(v)
 
-    print(f"▶️ Processing {district_slug.title()} ({state_slug.title()}): {len(villages)} total | ♻️ {cache_hits} cached (0ms) | ⚡ {len(to_compute)} to compute...")
+    print(f"\n▶️ Processing {district_slug.title()} ({state_slug.title()}): {len(villages)} total | ♻️ {cache_hits} cached (0ms) | ⚡ {len(to_compute)} to compute...")
     start_t = time.time()
 
+    def save_current_progress():
+        output_doc = {
+            "edition": "VPS_HEAVY_FULL_RESOLUTION",
+            "district": data["district"],
+            "state": data["state"],
+            "state_slug": state_slug,
+            "district_slug": district_slug,
+            "analytics": data.get("analytics", {}),
+            "total_dense_settlements": len(final_villages),
+            "cache_hits": cache_hits,
+            "newly_computed": len(final_villages) - cache_hits,
+            "last_updated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "villages": final_villages
+        }
+        with open(out_file, "w", encoding="utf-8") as f:
+            json.dump(output_doc, f, indent=2)
+
     if to_compute:
-        with ThreadPoolExecutor(max_workers=8) as executor:
-            for res in executor.map(process_village_dense, to_compute):
-                final_villages.append(res)
+        computed_count = 0
+        total_to_compute = len(to_compute)
+        try:
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                for res in executor.map(process_village_dense, to_compute):
+                    final_villages.append(res)
+                    computed_count += 1
+                    if computed_count % 25 == 0 or computed_count == total_to_compute:
+                        cur_t = time.time()
+                        el = cur_t - start_t
+                        v_rate = computed_count / max(el, 0.001)
+                        rem = total_to_compute - computed_count
+                        eta_s = rem / max(v_rate, 0.001)
+                        eta_m, eta_sec = divmod(int(eta_s), 60)
+                        pct = (computed_count / total_to_compute) * 100
+                        print(f"  ⏳ [{computed_count}/{total_to_compute}] ({pct:.1f}%) | {v_rate:.1f} v/s | ETA: {eta_m}m {eta_sec:02d}s | District Total: {len(final_villages)}")
+                        if computed_count % 100 == 0:
+                            save_current_progress()
+        except KeyboardInterrupt:
+            print("\n⚠️ Interrupted by user! Saving partial progress safely...")
+            save_current_progress()
+            print(f"💾 Safely saved {len(final_villages)} settlements to {out_file}!")
+            sys.exit(0)
 
-    output_doc = {
-        "edition": "VPS_HEAVY_FULL_RESOLUTION",
-        "district": data["district"],
-        "state": data["state"],
-        "state_slug": state_slug,
-        "district_slug": district_slug,
-        "analytics": data.get("analytics", {}),
-        "total_dense_settlements": len(final_villages),
-        "cache_hits": cache_hits,
-        "newly_computed": len(to_compute),
-        "last_updated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "villages": final_villages
-    }
-
-    with open(out_file, "w", encoding="utf-8") as f:
-        json.dump(output_doc, f, indent=2)
+    save_current_progress()
 
     elapsed = time.time() - start_t
     size_kb = round(os.path.getsize(out_file) / 1024, 1)
@@ -180,13 +216,14 @@ def main():
     parser.add_argument("--district", type=str, help="District slug (e.g. basti)")
     parser.add_argument("--limit", type=int, default=None, help="Limit number of villages per district for testing")
     parser.add_argument("--force", action="store_true", help="Force recomputing cached routes")
+    parser.add_argument("--workers", type=int, default=8, help="Worker threads (default: 8, optimal for Apple M4)")
     parser.add_argument("--all", action="store_true", help="Process all districts across India")
     args = parser.parse_args()
 
     if args.state and args.district:
         dist_path = os.path.join(DISTRICTS_DIR, args.state, f"{args.district}.json")
         if os.path.exists(dist_path):
-            process_district(dist_path, args.limit, args.force)
+            process_district(dist_path, args.limit, args.force, args.workers)
         else:
             print(f"❌ File not found: {dist_path}")
     elif args.all:
@@ -195,7 +232,7 @@ def main():
         for idx, dist_file in enumerate(all_districts):
             print(f"\n[{idx+1}/{len(all_districts)}]")
             try:
-                process_district(dist_file, args.limit, args.force)
+                process_district(dist_file, args.limit, args.force, args.workers)
             except Exception as e:
                 print(f"⚠️ Error on {dist_file}: {e}")
     else:

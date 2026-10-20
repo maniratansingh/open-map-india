@@ -26,7 +26,7 @@ OpenMapIndia is strictly designed to be **100% self-contained on GitHub Pages** 
 * **Zero External Geocoders**: Universal predictive search runs 100% client-side from [`api/v1/search_index.json`](file:///Users/mrps/Documents/MAP/api/v1/search_index.json) in 0ms without hitting rate-limited geocoding APIs.
 * **Strict Indian Territorial Boundary**: Enforced bounding box (`68.0°E` to `97.5°E`, `6.5°N` to `37.2°N`). Foreign coordinates outside India are hard-blocked at the boundary.
 * **National Highway Corridor Solver**: Point A ➔ Point B navigation uses an in-browser highway corridor algorithm that routes across India's National Highway network connecting district hubs offline.
-* **Heavy VPS Edition (Isolated)**: For developers who want to run a multi-gigabyte dense turn-by-turn road server on their own VPS or localhost, see the isolated [`vps_heavy_edition/`](file:///Users/mrps/Documents/MAP/vps_heavy_edition/) folder (strictly excluded from Git to prevent repository bloat).
+* **Heavy VPS Edition (Separate Branch)**: For developers who want to run a multi-gigabyte dense turn-by-turn road server on their own VPS or localhost, switch to the dedicated [**`vps-heavy`**](https://github.com/maniratansingh/open-map-india/tree/vps-heavy) branch.
 
 ---
 

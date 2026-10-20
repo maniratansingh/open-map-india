@@ -550,11 +550,12 @@
 
   <div id="map"></div>
 
-  <!-- Style Switcher (3 Layers: Light Default, Dark, Detailed) -->
+  <!-- Style Switcher (4 Layers: Light Default, Dark, Detailed, Classic OSM) -->
   <div class="style-switcher">
     <button class="style-btn active" id="btnStyleLight">☀️ Light (Apple)</button>
     <button class="style-btn" id="btnStyleDark">🌙 Dark (Midnight)</button>
     <button class="style-btn" id="btnStyleVoyager">🗺️ Detailed (Google)</button>
+    <button class="style-btn" id="btnStyleOsm">🌍 OSM (Classic)</button>
   </div>
 
   <div class="app-shell">
@@ -671,14 +672,36 @@
   </div>
 
   <script>
-    // 3 Curated Basemap Styles:
+    // 4 Curated Basemap Styles:
     // 1. Light (Apple Maps Minimal Pastel Vector Style)
     // 2. Dark (Midnight Cyberpunk Contrast)
     // 3. Voyager (Google Maps Functional Vibrant Roads & POIs)
+    // 4. OSM (Classic OpenStreetMap Standard Raster)
     const STYLES = {
       light: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
       dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-      voyager: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
+      voyager: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+      osm: {
+        version: 8,
+        sources: {
+          'osm-tiles': {
+            type: 'raster',
+            tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
+            tileSize: 256,
+            attribution: '&copy; OpenStreetMap Contributors',
+            maxzoom: 19
+          }
+        },
+        layers: [
+          {
+            id: 'osm-layer',
+            type: 'raster',
+            source: 'osm-tiles',
+            minzoom: 0,
+            maxzoom: 19
+          }
+        ]
+      }
     };
 
     let currentStyleKey = 'light';
@@ -712,6 +735,9 @@
       } else if (styleKey === 'voyager') {
         document.getElementById('btnStyleVoyager').classList.add('active');
         document.body.className = 'theme-light';
+      } else if (styleKey === 'osm') {
+        document.getElementById('btnStyleOsm').classList.add('active');
+        document.body.className = 'theme-light';
       }
 
       map.setStyle(STYLES[styleKey]);
@@ -720,6 +746,7 @@
     document.getElementById('btnStyleLight').addEventListener('click', () => setMapStyle('light'));
     document.getElementById('btnStyleDark').addEventListener('click', () => setMapStyle('dark'));
     document.getElementById('btnStyleVoyager').addEventListener('click', () => setMapStyle('voyager'));
+    document.getElementById('btnStyleOsm').addEventListener('click', () => setMapStyle('osm'));
 
     // Re-render route layers when style finishes reloading
     map.on('style.load', () => {

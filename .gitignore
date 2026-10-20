@@ -1,0 +1,21 @@
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Large raw OSM and intermediate files
+india_tiles/
+data/
+*.osm.pbf
+*.mbtiles
+*.tar.gz
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# System files
+.DS_Store
+Thumbs.db

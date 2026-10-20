@@ -1,0 +1,1 @@
+{"state":"Delhi","state_slug":"delhi","total_districts":1,"districts":[{"district":"Delhi","district_slug":"delhi","bbox":[76.8329,28.4085,77.3377,28.8845],"total_settlements":100,"_ref":"../districts/delhi/delhi.json"}],"_links":{"national":"../india.json"}}

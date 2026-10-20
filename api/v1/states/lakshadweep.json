@@ -1,0 +1,1 @@
+{"state":"Lakshadweep","state_slug":"lakshadweep","total_districts":1,"districts":[{"district":"Kavaratti","district_slug":"kavaratti","bbox":[72.1001,8.266,73.7026,11.7063],"total_settlements":10,"_ref":"../districts/lakshadweep/kavaratti.json"}],"_links":{"national":"../india.json"}}

@@ -1,7 +1,9 @@
-# 🇮🇳 OpenMapIndia
+# 🖥️ OpenMapIndia — VPS Heavy Edition (Branch: `vps-heavy`)
 
-> **100% GitHub-Native Geocompute, Rural Routing & Infrastructure Intelligence for India.**  
-> Covers every State, District, Village, Primary Health Centre (PHC/CHC), and Highway corridor with zero backend, zero API keys, and zero cloud hosting fees.
+> **Dedicated High-Compute & Full-Resolution Routing Engine Branch.**  
+> Contains the high-performance Python server, batch builders, and configurations to run multi-gigabyte dense turn-by-turn road calculations on a VPS or local machine.  
+> 
+> * 🌐 Looking for the lightweight 100% GitHub-native release? Switch to the [**`main`**](https://github.com/maniratansingh/open-map-india/tree/main) branch.
 
 ---
 

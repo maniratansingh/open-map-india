@@ -66,11 +66,20 @@ class VPSAPIHandler(SimpleHTTPRequestHandler):
                 to_lat = float(params.get("to_lat", [0])[0])
                 to_lon = float(params.get("to_lon", [0])[0])
 
-                backend = os.environ.get("OSRM_BACKEND", "https://router.project-osrm.org")
+                backend = os.environ.get("OSRM_BACKEND", "http://router.project-osrm.org")
                 osrm_url = f"{backend}/route/v1/driving/{from_lon},{from_lat};{to_lon},{to_lat}?overview=full&geometries=geojson"
-                req = urllib.request.Request(osrm_url, headers={"User-Agent": "OpenMapIndia-VPS/1.0"})
-                with urllib.request.urlopen(req, timeout=8) as r:
-                    res_data = r.read()
+                try:
+                    req = urllib.request.Request(osrm_url, headers={"User-Agent": "OpenMapIndia-VPS/1.0"})
+                    with urllib.request.urlopen(req, timeout=8) as r:
+                        res_data = r.read()
+                except Exception as inner_e:
+                    if osrm_url.startswith("https://"):
+                        fallback_url = osrm_url.replace("https://", "http://", 1)
+                        req = urllib.request.Request(fallback_url, headers={"User-Agent": "OpenMapIndia-VPS/1.0"})
+                        with urllib.request.urlopen(req, timeout=8) as r:
+                            res_data = r.read()
+                    else:
+                        raise inner_e
 
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")

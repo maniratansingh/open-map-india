@@ -3,8 +3,7 @@
 OpenMapIndia — VPS Heavy Edition Batch Generator
 Generates multi-gigabyte dense turn-by-turn road geometry files district-by-district.
 Optimized for Apple M4 / Multi-Core Linux with Smart Incremental Caching,
-Resumable Execution, Live ETA Progress, and Rich Emergency Transit Metrics.
-Saves directly to `vps_heavy_edition/data/full_routes/` (ignored by Git).
+Atomic Live Progress Telemetry for Web Dashboard, and Rich Emergency Metrics.
 """
 
 import argparse
@@ -20,9 +19,52 @@ from concurrent.futures import ThreadPoolExecutor
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DISTRICTS_DIR = os.path.join(BASE_DIR, "api", "v1", "districts")
 OUTPUT_DIR = os.path.join(os.path.dirname(__file__), "data", "full_routes")
+PROGRESS_FILE = os.path.join(os.path.dirname(__file__), "data", "progress.json")
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 OSRM_BACKEND = os.environ.get("OSRM_BACKEND", "http://router.project-osrm.org")
+
+RECENT_LOGS = []
+
+def log_and_record(msg):
+    print(msg)
+    timestamp = time.strftime("%H:%M:%S", time.localtime())
+    RECENT_LOGS.append(f"[{timestamp}] {msg}")
+    if len(RECENT_LOGS) > 30:
+        RECENT_LOGS.pop(0)
+
+def write_live_progress(state_name, district_name, dist_idx, total_districts,
+                        total_villages, cached_count, computed_count,
+                        rate_vps, eta_str, overall_completed, total_india=373988, status="running"):
+    free_gb = 0
+    try:
+        free_gb = round(shutil.disk_usage(OUTPUT_DIR).free / (1024**3), 2)
+    except Exception:
+        pass
+
+    prog_data = {
+        "status": status,
+        "current_state": state_name,
+        "current_district": district_name,
+        "district_index": dist_idx,
+        "total_districts": total_districts,
+        "current_district_total": total_villages,
+        "current_district_cached": cached_count,
+        "current_district_computed": computed_count,
+        "current_rate_vps": round(rate_vps, 1),
+        "eta_district_formatted": eta_str,
+        "total_india_completed": overall_completed,
+        "total_india_settlements": total_india,
+        "free_disk_gb": free_gb,
+        "recent_logs": list(RECENT_LOGS)
+    }
+    try:
+        temp_file = PROGRESS_FILE + ".tmp"
+        with open(temp_file, "w", encoding="utf-8") as f:
+            json.dump(prog_data, f, indent=2)
+        os.replace(temp_file, PROGRESS_FILE)
+    except Exception:
+        pass
 
 def fetch_dense_route(from_coords, to_coords):
     url = f"{OSRM_BACKEND}/route/v1/driving/{from_coords[1]},{from_coords[0]};{to_coords[1]},{to_coords[0]}?overview=full&geometries=geojson"
@@ -38,7 +80,7 @@ def fetch_dense_route(from_coords, to_coords):
                         "distance_m": round(rt["distance"]),
                         "duration_sec": round(rt["duration"])
                     }
-        except Exception as inner_e:
+        except Exception:
             if url.startswith("https://"):
                 try:
                     fallback_url = url.replace("https://", "http://", 1)
@@ -112,20 +154,16 @@ def process_village_dense(v):
         }
     }
 
-def process_district(district_file, max_villages=None, force=False, workers=8):
-    # Free disk check
-    try:
-        free_gb = shutil.disk_usage(OUTPUT_DIR).free / (1024**3)
-        if free_gb < 1.0:
-            print(f"⚠️ Warning: Low disk space ({free_gb:.1f} GB available). Please free disk space.")
-    except Exception:
-        pass
-
+def process_district(district_file, max_villages=None, force=False, workers=8,
+                     dist_idx=1, total_districts=1, cumulative_completed=0, total_india=373988):
     with open(district_file, "r", encoding="utf-8") as f:
         data = json.load(f)
 
     state_slug = data["state_slug"]
     district_slug = data["district_slug"]
+    district_name = data["district"]
+    state_name = data["state"]
+
     villages = data.get("villages", [])
     if max_villages:
         villages = villages[:max_villages]
@@ -158,14 +196,18 @@ def process_district(district_file, max_villages=None, force=False, workers=8):
         else:
             to_compute.append(v)
 
-    print(f"\n▶️ Processing {district_slug.title()} ({state_slug.title()}): {len(villages)} total | ♻️ {cache_hits} cached (0ms) | ⚡ {len(to_compute)} to compute...")
+    log_and_record(f"▶️ [{dist_idx}/{total_districts}] {district_name} ({state_name}): {len(villages)} settlements | ♻️ {cache_hits} cached (0ms) | ⚡ {len(to_compute)} to compute")
     start_t = time.time()
+
+    write_live_progress(state_name, district_name, dist_idx, total_districts,
+                        len(villages), cache_hits, 0,
+                        0.0, "Starting...", cumulative_completed + cache_hits, total_india)
 
     def save_current_progress():
         output_doc = {
             "edition": "VPS_HEAVY_FULL_RESOLUTION",
-            "district": data["district"],
-            "state": data["state"],
+            "district": district_name,
+            "state": state_name,
             "state_slug": state_slug,
             "district_slug": district_slug,
             "analytics": data.get("analytics", {}),
@@ -193,14 +235,25 @@ def process_district(district_file, max_villages=None, force=False, workers=8):
                         rem = total_to_compute - computed_count
                         eta_s = rem / max(v_rate, 0.001)
                         eta_m, eta_sec = divmod(int(eta_s), 60)
-                        pct = (computed_count / total_to_compute) * 100
-                        print(f"  ⏳ [{computed_count}/{total_to_compute}] ({pct:.1f}%) | {v_rate:.1f} v/s | ETA: {eta_m}m {eta_sec:02d}s | District Total: {len(final_villages)}")
+                        pct = ((cache_hits + computed_count) / len(villages)) * 100
+                        eta_str = f"{eta_m}m {eta_sec:02d}s"
+
+                        log_msg = f"  ⏳ [{computed_count}/{total_to_compute}] ({pct:.1f}%) | {v_rate:.1f} v/s | ETA: {eta_str} | Done in District: {len(final_villages)}"
+                        log_and_record(log_msg)
+
+                        write_live_progress(state_name, district_name, dist_idx, total_districts,
+                                            len(villages), cache_hits, computed_count,
+                                            v_rate, eta_str, cumulative_completed + cache_hits + computed_count, total_india)
+
                         if computed_count % 100 == 0:
                             save_current_progress()
         except KeyboardInterrupt:
-            print("\n⚠️ Interrupted by user! Saving partial progress safely...")
+            log_and_record("⚠️ Interrupted by user! Saving progress...")
             save_current_progress()
-            print(f"💾 Safely saved {len(final_villages)} settlements to {out_file}!")
+            write_live_progress(state_name, district_name, dist_idx, total_districts,
+                                len(villages), cache_hits, computed_count,
+                                0.0, "Paused", cumulative_completed + len(final_villages), total_india, status="paused")
+            log_and_record(f"💾 Safely saved {len(final_villages)} settlements to {out_file}!")
             sys.exit(0)
 
     save_current_progress()
@@ -208,7 +261,13 @@ def process_district(district_file, max_villages=None, force=False, workers=8):
     elapsed = time.time() - start_t
     size_kb = round(os.path.getsize(out_file) / 1024, 1)
     rate = len(to_compute) / max(elapsed, 0.001) if to_compute else 0
-    print(f"✅ Finished {district_slug.title()} in {elapsed:.1f}s ({rate:.1f} villages/s) | Size: {size_kb} KB -> {out_file}")
+    log_and_record(f"✅ Finished {district_name} in {elapsed:.1f}s ({rate:.1f} v/s) | Size: {size_kb} KB")
+
+    write_live_progress(state_name, district_name, dist_idx, total_districts,
+                        len(villages), cache_hits, len(to_compute),
+                        rate, "0s", cumulative_completed + len(final_villages), total_india)
+
+    return len(final_villages)
 
 def main():
     parser = argparse.ArgumentParser(description="OpenMapIndia VPS Batch Full-Resolution Road Generator")
@@ -226,18 +285,34 @@ def main():
             process_district(dist_path, args.limit, args.force, args.workers)
         else:
             print(f"❌ File not found: {dist_path}")
+    elif args.state and not args.district:
+        state_districts = sorted(glob.glob(os.path.join(DISTRICTS_DIR, args.state, "*.json")))
+        print(f"🌍 Found {len(state_districts)} districts in {args.state.title()}. Starting batch run...")
+        cumul = 0
+        for idx, dist_file in enumerate(state_districts):
+            try:
+                cnt = process_district(dist_file, args.limit, args.force, args.workers,
+                                       dist_idx=idx+1, total_districts=len(state_districts),
+                                       cumulative_completed=cumul)
+                cumul += cnt
+            except Exception as e:
+                log_and_record(f"⚠️ Error on {dist_file}: {e}")
     elif args.all:
         all_districts = sorted(glob.glob(os.path.join(DISTRICTS_DIR, "*", "*.json")))
-        print(f"🌍 Found {len(all_districts)} districts to process. Starting batch run...")
+        print(f"🌍 Found {len(all_districts)} districts across India. Starting batch run...")
+        cumul = 0
         for idx, dist_file in enumerate(all_districts):
-            print(f"\n[{idx+1}/{len(all_districts)}]")
             try:
-                process_district(dist_file, args.limit, args.force, args.workers)
+                cnt = process_district(dist_file, args.limit, args.force, args.workers,
+                                       dist_idx=idx+1, total_districts=len(all_districts),
+                                       cumulative_completed=cumul)
+                cumul += cnt
             except Exception as e:
-                print(f"⚠️ Error on {dist_file}: {e}")
+                log_and_record(f"⚠️ Error on {dist_file}: {e}")
     else:
         print("💡 Usage:")
-        print("  python3 build_full_india.py --state uttar_pradesh --district basti --limit 100")
+        print("  python3 build_full_india.py --state uttar_pradesh --district basti")
+        print("  python3 build_full_india.py --state uttar_pradesh")
         print("  python3 build_full_india.py --all")
 
 if __name__ == "__main__":

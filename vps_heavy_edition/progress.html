@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⚡ OpenMapIndia — Live Batch Compute Dashboard</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 26, 43, 0.75);
+      --card-border: rgba(45, 66, 107, 0.5);
+      --text-main: #f0f4fc;
+      --text-muted: #8b9bb4;
+      --accent: #00f2fe;
+      --accent-grad: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+      --success: #00e676;
+      --warning: #ffab00;
+      --danger: #ff1744;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(79, 172, 254, 0.08) 0%, transparent 40%);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Warning Banner */
+    .banner {
+      background: linear-gradient(90deg, rgba(0, 230, 118, 0.15) 0%, rgba(0, 242, 254, 0.15) 100%);
+      border: 1px solid rgba(0, 230, 118, 0.4);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 20px rgba(0, 230, 118, 0.1);
+    }
+
+    .banner-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .pulse-dot {
+      width: 14px;
+      height: 14px;
+      background-color: var(--success);
+      border-radius: 50%;
+      box-shadow: 0 0 12px var(--success);
+      animation: pulse 1.8s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.7); }
+      70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(0, 230, 118, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
+    }
+
+    .banner-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.5px;
+    }
+
+    .banner-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .banner-badge {
+      background: rgba(0, 230, 118, 0.2);
+      border: 1px solid var(--success);
+      color: var(--success);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+      padding-bottom: 16px;
+    }
+
+    .header-title h1 {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: var(--accent-grad);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-title p {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-top: 4px;
+    }
+
+    .header-meta {
+      display: flex;
+      gap: 12px;
+    }
+
+    .meta-tag {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* Stats Grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0; height: 3px;
+      background: var(--accent-grad);
+      opacity: 0.8;
+    }
+
+    .card-label {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .card-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .card-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    /* Progress Sections */
+    .progress-section {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 20px;
+      backdrop-filter: blur(10px);
+    }
+
+    .prog-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .prog-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .prog-pct {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .prog-bar-outer {
+      width: 100%;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .prog-bar-inner {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-grad);
+      border-radius: 10px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.5);
+    }
+
+    .prog-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 10px;
+    }
+
+    /* Terminal Box */
+    .terminal {
+      background: #05080f;
+      border: 1px solid #1a263d;
+      border-radius: 12px;
+      padding: 16px;
+      font-family: "SF Mono", Monaco, Menlo, Consolas, monospace;
+      font-size: 13px;
+      color: #79f8b4;
+      line-height: 1.6;
+      height: 240px;
+      overflow-y: auto;
+      box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .terminal-title {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .log-line {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    
+    <!-- Top Persistent Banner -->
+    <div class="banner">
+      <div class="banner-left">
+        <div class="pulse-dot"></div>
+        <div>
+          <div class="banner-title">COMPUTE ENGINE ACTIVE — DO NOT CLOSE OR SLEEP MACHINE</div>
+          <div class="banner-sub">Dense turn-by-turn road curves are calculating and saving safely to disk in the background.</div>
+        </div>
+      </div>
+      <div class="banner-badge" id="statusBadge">RUNNING</div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-title">
+        <h1>OpenMapIndia — Live Batch Engine</h1>
+        <p>Full-Resolution Turn-by-Turn Rural Road Network Precomputer</p>
+      </div>
+      <div class="header-meta">
+        <div class="meta-tag" id="hardwareTag">Apple M4 • 8 Workers</div>
+        <div class="meta-tag" id="diskTag">Disk Free: Checking...</div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid">
+      <div class="card">
+        <div class="card-label">Active District</div>
+        <div class="card-value" id="curDistrict">Basti</div>
+        <div class="card-sub" id="curState">Uttar Pradesh</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">District Progress</div>
+        <div class="card-value" id="districtRatio">0 / 0</div>
+        <div class="card-sub" id="districtCacheStats">♻️ 0 Cached (0ms)</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Compute Rate</div>
+        <div class="card-value" id="rateValue">0.0 <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">villages/s</span></div>
+        <div class="card-sub" id="routeRateValue">≈ 0 road routes/s</div>
+      </div>
+
+      <div class="card">
+        <div class="card-label">Estimated Time Remaining</div>
+        <div class="card-value" id="etaValue">--:--</div>
+        <div class="card-sub" id="overallRatio">Whole India: 0%</div>
+      </div>
+    </div>
+
+    <!-- Current District Progress -->
+    <div class="progress-section">
+      <div class="prog-header">
+        <div class="prog-title" id="districtProgTitle">Current District Progress (Basti)</div>
+        <div class="prog-pct" id="districtProgPct">0%</div>
+      </div>
+      <div class="prog-bar-outer">
+        <div class="prog-bar-inner" id="districtProgBar"></div>
+      </div>
+      <div class="prog-details">
+        <span id="districtDetailLeft">Processed: 0 settlements</span>
+        <span id="districtDetailRight">District ETA: Calculating...</span>
+      </div>
+    </div>
+
+    <!-- Whole India Progress -->
+    <div class="progress-section">
+      <div class="prog-header">
+        <div class="prog-title" id="indiaProgTitle">Overall Progress Across India</div>
+        <div class="prog-pct" id="indiaProgPct">0%</div>
+      </div>
+      <div class="prog-bar-outer">
+        <div class="prog-bar-inner" id="indiaProgBar" style="background: linear-gradient(135deg, #00e676 0%, #00f2fe 100%);"></div>
+      </div>
+      <div class="prog-details">
+        <span id="indiaDetailLeft">Districts: 0 / 594</span>
+        <span id="indiaDetailRight">National Total: 373,988 Settlements</span>
+      </div>
+    </div>
+
+    <!-- Live Terminal Feed -->
+    <div class="terminal">
+      <div class="terminal-title">
+        <span>Live Engine Console Logs</span>
+        <span id="lastUpdatedTag">Updated: Just now</span>
+      </div>
+      <div id="logContent">
+        <div class="log-line">Connecting to OpenMapIndia Engine on port 8081...</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    async function updateDashboard() {
+      try {
+        const res = await fetch("/api/v1/build_progress");
+        if (!res.ok) return;
+        const data = await res.json();
+
+        if (data.status === "idle") {
+          document.getElementById("statusBadge").textContent = "IDLE";
+          document.getElementById("statusBadge").style.color = "#8b9bb4";
+          document.getElementById("statusBadge").style.borderColor = "#8b9bb4";
+          document.getElementById("statusBadge").style.background = "rgba(255,255,255,0.05)";
+          return;
+        }
+
+        // Active District
+        document.getElementById("curDistrict").textContent = data.current_district || "Active";
+        document.getElementById("curState").textContent = data.current_state || "India";
+
+        // District Progress
+        const distDone = (data.current_district_cached || 0) + (data.current_district_computed || 0);
+        const distTotal = data.current_district_total || 1;
+        document.getElementById("districtRatio").textContent = `${distDone.toLocaleString()} / ${distTotal.toLocaleString()}`;
+        document.getElementById("districtCacheStats").textContent = `♻️ ${(data.current_district_cached || 0).toLocaleString()} Cached in 0ms`;
+
+        // Rates
+        const vps = data.current_rate_vps || 0;
+        document.getElementById("rateValue").innerHTML = `${vps.toFixed(1)} <span style="font-size: 14px; font-weight: 500; color: var(--text-muted);">v/s</span>`;
+        document.getElementById("routeRateValue").textContent = `≈ ${(vps * 2).toFixed(1)} road routes/s`;
+
+        // ETA
+        document.getElementById("etaValue").textContent = data.eta_district_formatted || data.eta_formatted || "Calculating...";
+        document.getElementById("overallRatio").textContent = `District: ${data.district_index || 1} / ${data.total_districts || 594}`;
+
+        // District Progress Bar
+        const distPct = Math.min(100, Math.round(((distDone / distTotal) * 100) * 10) / 10);
+        document.getElementById("districtProgTitle").textContent = `Current District Progress (${data.current_district || ""})`;
+        document.getElementById("districtProgPct").textContent = `${distPct}%`;
+        document.getElementById("districtProgBar").style.width = `${distPct}%`;
+        document.getElementById("districtDetailLeft").textContent = `Processed: ${distDone.toLocaleString()} of ${distTotal.toLocaleString()} settlements`;
+        document.getElementById("districtDetailRight").textContent = `District ETA: ${data.eta_district_formatted || "In progress"}`;
+
+        // India Progress Bar
+        const indDone = data.total_india_completed || distDone;
+        const indTotal = data.total_india_settlements || 373988;
+        const indPct = Math.min(100, Math.round(((indDone / indTotal) * 100) * 100) / 100);
+        document.getElementById("indiaProgPct").textContent = `${indPct}%`;
+        document.getElementById("indiaProgBar").style.width = `${Math.max(1, indPct)}%`;
+        document.getElementById("indiaDetailLeft").textContent = `Districts: ${data.district_index || 1} / ${data.total_districts || 594}`;
+        document.getElementById("indiaDetailRight").textContent = `${indDone.toLocaleString()} / ${indTotal.toLocaleString()} settlements`;
+
+        // Disk
+        if (data.free_disk_gb) {
+          document.getElementById("diskTag").textContent = `Disk Free: ${data.free_disk_gb} GB`;
+        }
+
+        // Terminal Logs
+        if (data.recent_logs && data.recent_logs.length > 0) {
+          const logDiv = document.getElementById("logContent");
+          logDiv.innerHTML = data.recent_logs.map(l => `<div class="log-line">${l}</div>`).join("");
+          logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        document.getElementById("lastUpdatedTag").textContent = `Live • ${new Date().toLocaleTimeString()}`;
+
+      } catch (err) {
+        console.error("Dashboard poll error:", err);
+      }
+    }
+
+    // Auto poll every 1.5s
+    setInterval(updateDashboard, 1500);
+    updateDashboard();
+  </script>
+</body>
+</html>

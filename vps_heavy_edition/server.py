@@ -14,6 +14,8 @@ import urllib.request
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+PROGRESS_FILE = os.path.join(os.path.dirname(__file__), "data", "progress.json")
+PROGRESS_HTML = os.path.join(os.path.dirname(__file__), "progress.html")
 FULL_ROUTES_DIR = os.path.join(os.path.dirname(__file__), "data", "full_routes")
 
 class VPSAPIHandler(SimpleHTTPRequestHandler):
@@ -31,9 +33,43 @@ class VPSAPIHandler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.end_headers()
 
+    def do_HEAD(self):
+        parsed = urllib.parse.urlparse(self.path)
+        if parsed.path in ("/progress", "/progress.html"):
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+            return
+        super().do_HEAD()
+
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
+
+        # Progress dashboard web page
+        if path in ("/progress", "/progress.html"):
+            if os.path.exists(PROGRESS_HTML):
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.end_headers()
+                with open(PROGRESS_HTML, "rb") as f:
+                    self.wfile.write(f.read())
+                return
+
+        # Progress check JSON API
+        if path == "/api/v1/build_progress":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            if os.path.exists(PROGRESS_FILE):
+                with open(PROGRESS_FILE, "rb") as f:
+                    self.wfile.write(f.read())
+            else:
+                self.wfile.write(json.dumps({
+                    "status": "idle",
+                    "message": "Engine is idle. Start build_full_india.py to monitor live progress."
+                }).encode("utf-8"))
+            return
 
         # 0. Health check endpoint
         if path == "/health":
@@ -45,9 +81,11 @@ class VPSAPIHandler(SimpleHTTPRequestHandler):
                 "edition": "VPS_HEAVY_EDITION",
                 "version": "1.0.0",
                 "service": "OpenMapIndia VPS High-Performance Engine",
-                "osrm_backend": os.environ.get("OSRM_BACKEND", "https://router.project-osrm.org"),
+                "osrm_backend": os.environ.get("OSRM_BACKEND", "http://router.project-osrm.org"),
                 "endpoints": [
                     "/health",
+                    "/progress.html",
+                    "/api/v1/build_progress",
                     "/route?from_lat=<lat>&from_lon=<lon>&to_lat=<lat>&to_lon=<lon>",
                     "/api/v1/full_routes/<state>/<district>.json",
                     "/api/v1/districts/<state>/<district>.json",

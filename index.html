@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpenMapIndia — Vibrant National Geocompute & Routing Intelligence</title>
+  <title>OpenMapIndia — Turn-by-Turn GPS Navigation & Geocompute Engine</title>
   
   <!-- MapLibre GL CSS & JS -->
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
@@ -14,19 +14,16 @@
       --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
       --saffron: #ff6b00;
       --emerald: #00c853;
-      --emerald-glow: rgba(0, 200, 83, 0.4);
       --cyan: #00b4d8;
-      --cyan-glow: rgba(0, 180, 216, 0.4);
       --amber: #ff9100;
-      --amber-glow: rgba(255, 145, 0, 0.4);
       --indigo: #4f46e5;
     }
 
-    /* Vibrant Light Theme (Default - Rich, Colorful, High Pop) */
+    /* Light Theme (Default) */
     body.theme-light {
-      --bg-panel: rgba(255, 255, 255, 0.92);
-      --panel-border: rgba(255, 255, 255, 0.8);
-      --panel-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.22), 0 0 1px rgba(0, 0, 0, 0.15);
+      --bg-panel: rgba(255, 255, 255, 0.93);
+      --panel-border: rgba(255, 255, 255, 0.85);
+      --panel-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.22);
       --text-title: #0f172a;
       --text-sub: #334155;
       --text-muted: #64748b;
@@ -39,12 +36,12 @@
       --pill-text: #1e293b;
       --btn-sec-bg: #f8fafc;
       --btn-sec-text: #0f172a;
-      --route-casing: #ffffff;
+      --nav-active: #0284c7;
     }
 
-    /* Vibrant Dark Theme (Cyberpunk Midnight Neon) */
+    /* Dark Theme */
     body.theme-dark {
-      --bg-panel: rgba(11, 15, 25, 0.92);
+      --bg-panel: rgba(11, 15, 25, 0.93);
       --panel-border: rgba(255, 255, 255, 0.14);
       --panel-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
       --text-title: #ffffff;
@@ -59,7 +56,7 @@
       --pill-text: #e2e8f0;
       --btn-sec-bg: rgba(255, 255, 255, 0.1);
       --btn-sec-text: #ffffff;
-      --route-casing: #050811;
+      --nav-active: #38bdf8;
     }
 
     * {
@@ -86,7 +83,7 @@
       right: 0;
     }
 
-    /* Style Switcher Pill Toolbar (Top Right) */
+    /* Top Right Toolbars */
     .style-switcher {
       position: absolute;
       top: 18px;
@@ -95,7 +92,6 @@
       display: flex;
       background: var(--bg-panel);
       backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
       border: 1px solid var(--panel-border);
       padding: 4px;
       border-radius: 40px;
@@ -107,7 +103,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 7px 15px;
+      padding: 7px 14px;
       border-radius: 24px;
       border: none;
       font-size: 12px;
@@ -115,11 +111,7 @@
       color: var(--text-muted);
       background: transparent;
       cursor: pointer;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .style-btn:hover {
-      color: var(--text-title);
+      transition: all 0.25s;
     }
 
     .style-btn.active {
@@ -128,13 +120,39 @@
       box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
     }
 
+    /* Floating Apple-Style GPS Location Button */
+    .gps-btn {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      z-index: 20;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: var(--bg-panel);
+      backdrop-filter: blur(28px);
+      border: 1.5px solid var(--panel-border);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .gps-btn:hover {
+      transform: scale(1.12);
+      box-shadow: 0 12px 30px rgba(2, 132, 199, 0.4);
+    }
+
     /* Floating UI Container */
     .app-shell {
       position: absolute;
       top: 18px;
       left: 18px;
       bottom: 18px;
-      width: 450px;
+      width: 460px;
       max-width: calc(100vw - 36px);
       z-index: 10;
       display: flex;
@@ -146,18 +164,17 @@
     .glass-card {
       background: var(--bg-panel);
       backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
       border: 1px solid var(--panel-border);
       border-radius: 22px;
       box-shadow: var(--panel-shadow);
       pointer-events: auto;
       overflow: hidden;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.3s;
     }
 
     /* Header */
     .header-card {
-      padding: 18px 22px;
+      padding: 16px 20px 14px;
       position: relative;
     }
 
@@ -175,11 +192,11 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .brand h1 {
-      font-size: 22px;
+      font-size: 21px;
       font-weight: 800;
       letter-spacing: -0.6px;
       background: linear-gradient(135deg, #ff6b00 0%, #0284c7 50%, #00c853 100%);
@@ -190,7 +207,7 @@
     .brand-tag {
       font-size: 10px;
       font-weight: 800;
-      background: linear-gradient(135deg, rgba(255, 107, 0, 0.15), rgba(2, 132, 199, 0.15));
+      background: rgba(2, 132, 199, 0.12);
       color: #0284c7;
       padding: 3px 8px;
       border-radius: 12px;
@@ -204,35 +221,55 @@
       border-color: rgba(56, 189, 248, 0.4);
     }
 
-    .header-subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.45;
-    }
-
-    .national-pills {
+    /* Mode Navigation Tabs */
+    .mode-tabs {
       display: flex;
-      gap: 6px;
+      background: rgba(0, 0, 0, 0.04);
+      padding: 4px;
+      border-radius: 14px;
       margin-top: 10px;
-      flex-wrap: wrap;
+      gap: 4px;
     }
 
-    .pill {
-      font-size: 11px;
-      padding: 4px 9px;
-      border-radius: 8px;
-      background: var(--pill-bg);
-      color: var(--pill-text);
-      border: 1px solid var(--pill-border);
+    body.theme-dark .mode-tabs {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .mode-tab {
+      flex: 1;
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
       font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
     }
 
-    /* Scrollable Controls & Results */
+    .mode-tab.active {
+      background: #ffffff;
+      color: #0284c7;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    body.theme-dark .mode-tab.active {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(2, 132, 199, 0.4);
+    }
+
+    /* Controls Scroll Area */
     .controls-card {
-      padding: 18px 22px;
+      padding: 16px 20px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       overflow-y: auto;
       max-height: calc(100vh - 200px);
     }
@@ -240,7 +277,7 @@
     .field-group {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 5px;
     }
 
     label {
@@ -256,7 +293,7 @@
       background: var(--input-bg);
       border: 1.5px solid var(--input-border);
       color: var(--text-title);
-      padding: 11px 14px;
+      padding: 10px 14px;
       border-radius: 12px;
       font-size: 13.5px;
       font-weight: 600;
@@ -266,19 +303,92 @@
 
     select:focus, input:focus {
       border-color: #0284c7;
-      box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.25);
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    /* A to B Navigation Inputs */
+    .nav-point-box {
+      background: var(--card-inner);
+      border: 1.5px solid var(--card-border-inner);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav-point-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .nav-point-title {
+      font-size: 11.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--text-sub);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-quick-gps {
+      font-size: 11px;
+      font-weight: 700;
+      background: rgba(2, 132, 199, 0.12);
+      color: #0284c7;
+      border: 1px solid rgba(2, 132, 199, 0.25);
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .nav-status-text {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-title);
+      padding: 6px 10px;
+      background: rgba(0, 0, 0, 0.02);
+      border-radius: 8px;
+      border: 1px dashed var(--input-border);
+    }
+
+    /* Live Route Stats Bar */
+    .route-summary-bar {
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 6px 18px rgba(2, 132, 199, 0.35);
+    }
+
+    .rs-main {
+      font-size: 18px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rs-sub {
+      font-size: 12px;
+      opacity: 0.9;
+      font-weight: 600;
     }
 
     /* Analytics Panel */
     .analytics-panel {
       background: var(--card-inner);
       border: 1.5px solid var(--card-border-inner);
-      border-radius: 16px;
-      padding: 14px;
+      border-radius: 14px;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+      gap: 8px;
     }
 
     .analytics-header {
@@ -288,65 +398,57 @@
     }
 
     .analytics-title {
-      font-size: 13px;
+      font-size: 12.5px;
       font-weight: 800;
       color: var(--text-title);
     }
 
     .score-badge {
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, rgba(0, 200, 83, 0.15), rgba(0, 200, 83, 0.25));
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(0, 200, 83, 0.15);
       color: #00a844;
       border: 1px solid rgba(0, 200, 83, 0.4);
-    }
-
-    body.theme-dark .score-badge {
-      color: #00e676;
     }
 
     .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
+      gap: 6px;
     }
 
     .stat-box {
       background: rgba(2, 132, 199, 0.03);
-      padding: 10px 12px;
-      border-radius: 10px;
+      padding: 8px 10px;
+      border-radius: 8px;
       border: 1px solid var(--card-border-inner);
     }
 
-    body.theme-dark .stat-box {
-      background: rgba(255, 255, 255, 0.04);
-    }
-
     .stat-box-val {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: var(--text-title);
     }
 
     .stat-box-lbl {
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 600;
       color: var(--text-muted);
-      margin-top: 2px;
+      margin-top: 1px;
     }
 
-    /* Village Result Card */
+    /* Village Detail Card */
     .village-detail {
       background: var(--card-inner);
       border: 2px solid #0284c7;
       border-radius: 16px;
-      padding: 16px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.25);
+      gap: 10px;
+      box-shadow: 0 8px 24px -6px rgba(2, 132, 199, 0.2);
     }
 
     .v-header {
@@ -356,29 +458,27 @@
     }
 
     .v-name {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 800;
       color: var(--text-title);
     }
 
     .v-type {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 800;
       text-transform: uppercase;
-      padding: 3px 8px;
+      padding: 2px 7px;
       border-radius: 6px;
       background: rgba(2, 132, 199, 0.12);
       color: #0284c7;
-      border: 1px solid rgba(2, 132, 199, 0.25);
     }
 
-    /* Vector Cards (High Voltage Eye-Popping Aesthetic) */
     .vector-card {
-      border-radius: 14px;
-      padding: 12px 14px;
+      border-radius: 12px;
+      padding: 10px 12px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .vector-phc {
@@ -394,47 +494,40 @@
     .vc-top {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
 
     .vc-icon {
-      font-size: 22px;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+      font-size: 20px;
     }
 
     .vc-title {
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 800;
       color: var(--text-title);
       flex: 1;
     }
 
     .vc-dist {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 900;
     }
 
     .vc-dist-emerald { color: #00a844; }
     .vc-dist-amber { color: #ff6b00; }
-    body.theme-dark .vc-dist-emerald { color: #00e676; }
-    body.theme-dark .vc-dist-amber { color: #ff9100; }
 
     .vc-bottom {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 11.5px;
+      font-size: 11px;
       color: var(--text-muted);
-      border-top: 1px solid rgba(0, 0, 0, 0.06);
-      padding-top: 6px;
-    }
-
-    body.theme-dark .vc-bottom {
-      border-top-color: rgba(255, 255, 255, 0.08);
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      padding-top: 5px;
     }
 
     .road-tag {
-      font-size: 11px;
+      font-size: 10.5px;
       font-weight: 800;
       color: var(--text-sub);
     }
@@ -447,7 +540,7 @@
       color: var(--text-title);
     }
 
-    /* Actions */
+    /* Buttons */
     .btn-group {
       display: flex;
       gap: 8px;
@@ -456,9 +549,9 @@
 
     .btn {
       flex: 1;
-      padding: 11px 14px;
+      padding: 10px 14px;
       border-radius: 12px;
-      font-size: 12.5px;
+      font-size: 12px;
       font-weight: 800;
       cursor: pointer;
       border: none;
@@ -475,22 +568,40 @@
       box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
     }
 
-    .btn-primary:hover {
-      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
-      transform: translateY(-1px);
-    }
-
     .btn-secondary {
       background: var(--btn-sec-bg);
       color: var(--btn-sec-text);
       border: 1.5px solid var(--panel-border);
     }
 
-    .btn-secondary:hover {
-      background: rgba(0, 0, 0, 0.08);
+    /* GPS User Radar Marker */
+    .user-gps-marker {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #0284c7;
+      border: 3.5px solid #ffffff;
+      box-shadow: 0 0 20px #0284c7;
+      position: relative;
     }
 
-    /* High-Voltage Animated Radar Pin for Village */
+    .user-gps-marker::after {
+      content: '';
+      position: absolute;
+      top: -12px;
+      left: -12px;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(2, 132, 199, 0.35);
+      animation: gps-wave 2s infinite ease-out;
+    }
+
+    @keyframes gps-wave {
+      0% { transform: scale(0.3); opacity: 1; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
     .beacon-wrapper {
       position: relative;
       width: 24px;
@@ -506,7 +617,7 @@
       background: #0284c7;
       border: 3px solid #ffffff;
       border-radius: 50%;
-      box-shadow: 0 0 16px #0284c7, 0 0 30px rgba(2, 132, 199, 0.8);
+      box-shadow: 0 0 16px #0284c7;
       z-index: 2;
     }
 
@@ -525,16 +636,15 @@
       100% { transform: scale(1.6); opacity: 0; }
     }
 
-    /* 3D Glossy Symbols */
     .marker-3d-symbol {
-      font-size: 28px;
-      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.4));
+      font-size: 26px;
+      filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
       cursor: pointer;
-      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: transform 0.2s;
     }
 
     .marker-3d-symbol:hover {
-      transform: scale(1.25) translateY(-4px);
+      transform: scale(1.2) translateY(-3px);
     }
 
     /* Responsive */
@@ -552,6 +662,11 @@
       .style-switcher {
         top: auto;
         bottom: 16px;
+        left: 16px;
+        right: auto;
+      }
+      .gps-btn {
+        bottom: 16px;
         right: 16px;
       }
     }
@@ -561,13 +676,16 @@
 
   <div id="map"></div>
 
-  <!-- Style Switcher (Vibrant Colored Default, Midnight Dark, Apple Minimal, Classic OSM) -->
+  <!-- Top-Right 4-Layer Basemap Switcher -->
   <div class="style-switcher">
     <button class="style-btn active" id="btnStyleVoyager">🎨 Vibrant (Google/Apple)</button>
-    <button class="style-btn" id="btnStyleDark">🌙 Dark (Midnight Neon)</button>
-    <button class="style-btn" id="btnStyleLight">☀️ Apple (Minimal)</button>
+    <button class="style-btn" id="btnStyleDark">🌙 Dark (Midnight)</button>
+    <button class="style-btn" id="btnStyleLight">☀️ Apple (Light)</button>
     <button class="style-btn" id="btnStyleOsm">🌍 Classic OSM</button>
   </div>
+
+  <!-- Floating Current Location GPS Button -->
+  <button class="gps-btn" id="btnFloatingGps" title="Detect Current GPS Location">🎯</button>
 
   <div class="app-shell">
     <!-- Header -->
@@ -578,113 +696,154 @@
         <span class="brand-tag">v1.0 API</span>
       </div>
       <p class="header-subtitle">
-        National Geocompute & Precomputed Rural Routing with Real Physical Road Curvatures.
+        National Geocompute, GPS Location & Turn-by-Turn Road Routing.
       </p>
-      <div class="national-pills">
-        <span class="pill">🏛️ 35 States & UTs</span>
-        <span class="pill">📍 594 Districts</span>
-        <span class="pill">🏡 373,988 Settlements</span>
-        <span class="pill">⚡ 22 MB Static</span>
+
+      <!-- Mode Switcher Tabs -->
+      <div class="mode-tabs">
+        <button class="mode-tab active" id="tabExplore">🗺️ Explore Villages</button>
+        <button class="mode-tab" id="tabNavigate">🧭 Route (A ➔ B)</button>
       </div>
     </div>
 
-    <!-- Controls -->
+    <!-- Controls Body -->
     <div class="glass-card controls-card">
-      <!-- State Selector -->
-      <div class="field-group">
-        <label>1. Select State / UT</label>
-        <select id="stateSelect">
-          <option value="">Loading States...</option>
-        </select>
+      
+      <!-- ================= SECTION 1: EXPLORE MODE ================= -->
+      <div id="sectionExplore" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- State Selector -->
+        <div class="field-group">
+          <label>1. Select State / UT</label>
+          <select id="stateSelect">
+            <option value="">Loading States...</option>
+          </select>
+        </div>
+
+        <!-- District Selector -->
+        <div class="field-group" id="districtGroup" style="display: none;">
+          <label>2. Select District</label>
+          <select id="districtSelect">
+            <option value="">Choose District...</option>
+          </select>
+        </div>
+
+        <!-- District Analytics -->
+        <div class="analytics-panel" id="analyticsPanel" style="display: none;">
+          <div class="analytics-header">
+            <span class="analytics-title" id="analyticsDistrictName">District Analytics</span>
+            <span class="score-badge" id="analyticsScore">Score: --</span>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-box-val" id="statPhcKm">-- km</div>
+              <div class="stat-box-lbl">Avg Distance to PHC</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-val" id="statHwPct">--%</div>
+              <div class="stat-box-lbl">Near Highway (&lt;5km)</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-val" id="statHwKm">-- km</div>
+              <div class="stat-box-lbl">Avg Highway Distance</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-box-val" id="statSettlements">--</div>
+              <div class="stat-box-lbl">Indexed Settlements</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Village Search & Dropdown -->
+        <div class="field-group" id="villageGroup" style="display: none;">
+          <label>3. Search Settlement / Village</label>
+          <input type="text" id="villageSearch" placeholder="Type village name (e.g. Kalwari)..." />
+          <select id="villageSelect" size="5" style="margin-top: 6px; display: none;">
+          </select>
+        </div>
+
+        <!-- Village Vector Card -->
+        <div class="village-detail" id="villageDetail" style="display: none;">
+          <div class="v-header">
+            <span class="v-name" id="vName">Village Name</span>
+            <span class="v-type" id="vType">VILLAGE</span>
+          </div>
+
+          <!-- PHC Vector -->
+          <div class="vector-card vector-phc">
+            <div class="vc-top">
+              <span class="vc-icon">🏥</span>
+              <span class="vc-title" id="vPhcName">Nearest Health Facility</span>
+              <span class="vc-dist vc-dist-emerald" id="vPhcDist">-- km</span>
+            </div>
+            <div class="vc-bottom">
+              <span class="road-tag" id="vPhcType">Primary Health Centre</span>
+              <span class="eta-badge" id="vPhcEta">🚗 Est. -- mins drive</span>
+            </div>
+          </div>
+
+          <!-- Highway Vector -->
+          <div class="vector-card vector-hw">
+            <div class="vc-top">
+              <span class="vc-icon">🛣️</span>
+              <span class="vc-title" id="vHwRef">Nearest Highway Corridor</span>
+              <span class="vc-dist vc-dist-amber" id="vHwDist">-- km</span>
+            </div>
+            <div class="vc-bottom">
+              <span class="road-tag" id="vHwGrade">National Highway</span>
+              <span class="eta-badge" id="vHwEta">🚗 Est. -- mins drive</span>
+            </div>
+          </div>
+
+          <div class="btn-group">
+            <button class="btn btn-primary" id="btnCopyUrl">📋 Copy API URL</button>
+            <a class="btn btn-secondary" id="btnViewJson" target="_blank" style="text-decoration: none;">🔍 View JSON</a>
+          </div>
+        </div>
       </div>
 
-      <!-- District Selector -->
-      <div class="field-group" id="districtGroup" style="display: none;">
-        <label>2. Select District</label>
-        <select id="districtSelect">
-          <option value="">Choose District...</option>
-        </select>
-      </div>
-
-      <!-- District Analytics -->
-      <div class="analytics-panel" id="analyticsPanel" style="display: none;">
-        <div class="analytics-header">
-          <span class="analytics-title" id="analyticsDistrictName">District Analytics</span>
-          <span class="score-badge" id="analyticsScore">Score: --</span>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-box">
-            <div class="stat-box-val" id="statPhcKm">-- km</div>
-            <div class="stat-box-lbl">Avg Distance to PHC</div>
+      <!-- ================= SECTION 2: A TO B NAVIGATION MODE ================= -->
+      <div id="sectionNavigate" style="display: none; flex-direction: column; gap: 12px;">
+        <!-- Point A (Start Location) -->
+        <div class="nav-point-box">
+          <div class="nav-point-header">
+            <span class="nav-point-title">🟢 Point A (Origin)</span>
+            <button class="btn-quick-gps" id="btnSetAFromGps">🎯 My Location</button>
           </div>
-          <div class="stat-box">
-            <div class="stat-box-val" id="statHwPct">--%</div>
-            <div class="stat-box-lbl">Near Highway (&lt;5km)</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-box-val" id="statHwKm">-- km</div>
-            <div class="stat-box-lbl">Avg Highway Distance</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-box-val" id="statSettlements">--</div>
-            <div class="stat-box-lbl">Indexed Settlements</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Village Search & Dropdown -->
-      <div class="field-group" id="villageGroup" style="display: none;">
-        <label>3. Search Settlement / Village</label>
-        <input type="text" id="villageSearch" placeholder="Type village name (e.g. Kalwari)..." />
-        <select id="villageSelect" size="5" style="margin-top: 6px; display: none;">
-        </select>
-      </div>
-
-      <!-- Village Vector Card -->
-      <div class="village-detail" id="villageDetail" style="display: none;">
-        <div class="v-header">
-          <span class="v-name" id="vName">Village Name</span>
-          <span class="v-type" id="vType">VILLAGE</span>
+          <div class="nav-status-text" id="statusPointA">Click map or use GPS</div>
         </div>
 
-        <!-- PHC Vector -->
-        <div class="vector-card vector-phc">
-          <div class="vc-top">
-            <span class="vc-icon">🏥</span>
-            <span class="vc-title" id="vPhcName">Nearest Health Facility</span>
-            <span class="vc-dist vc-dist-emerald" id="vPhcDist">-- km</span>
+        <!-- Point B (Destination) -->
+        <div class="nav-point-box">
+          <div class="nav-point-header">
+            <span class="nav-point-title">🔴 Point B (Destination)</span>
+            <span style="font-size: 11px; color: var(--text-muted);">Click on map</span>
           </div>
-          <div class="vc-bottom">
-            <span class="road-tag" id="vPhcType">Primary Health Centre</span>
-            <span class="eta-badge" id="vPhcEta">🚗 Est. -- mins drive</span>
-          </div>
+          <div class="nav-status-text" id="statusPointB">Click map to set destination</div>
         </div>
 
-        <!-- Highway Vector -->
-        <div class="vector-card vector-hw">
-          <div class="vc-top">
-            <span class="vc-icon">🛣️</span>
-            <span class="vc-title" id="vHwRef">Nearest Highway Corridor</span>
-            <span class="vc-dist vc-dist-amber" id="vHwDist">-- km</span>
+        <!-- Live Route Navigation Summary -->
+        <div class="route-summary-bar" id="navSummaryBar" style="display: none;">
+          <div>
+            <div class="rs-main" id="navEta">🚗 -- mins</div>
+            <div class="rs-sub" id="navDist">Distance: -- km</div>
           </div>
-          <div class="vc-bottom">
-            <span class="road-tag" id="vHwGrade">National Highway</span>
-            <span class="eta-badge" id="vHwEta">🚗 Est. -- mins drive</span>
-          </div>
+          <button class="btn btn-secondary" id="btnClearNav" style="flex: none; padding: 6px 12px;">✕ Clear</button>
         </div>
 
-        <!-- Actions -->
-        <div class="btn-group">
-          <button class="btn btn-primary" id="btnCopyUrl">📋 Copy API URL</button>
-          <a class="btn btn-secondary" id="btnViewJson" target="_blank" style="text-decoration: none;">🔍 View JSON</a>
+        <!-- Quick Routing Presets -->
+        <div class="field-group">
+          <label>Quick Routing from Origin</label>
+          <div class="btn-group">
+            <button class="btn btn-secondary" id="btnNavNearestPhc">🏥 Nearest PHC</button>
+            <button class="btn btn-secondary" id="btnNavNearestHw">🛣️ Nearest Highway</button>
+          </div>
         </div>
       </div>
+
     </div>
   </div>
 
   <script>
-    // 4 High-Pop Curated Basemap Styles:
-    // Default is Voyager (Rich Google/Apple colored roads, parks, rivers)
     const STYLES = {
       voyager: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
       dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
@@ -713,12 +872,20 @@
     };
 
     let currentStyleKey = 'voyager';
+    let currentMode = 'explore'; // 'explore' or 'navigate'
     let lastRenderedVillage = null;
     let nationalData = null;
     let currentDistrictData = null;
     let markers = [];
+    let userLocation = null;
 
-    // Initialize MapLibre GL with Vibrant Colored Vector Style as DEFAULT
+    // Navigation State
+    let pointA = null; // [lat, lon, label]
+    let pointB = null; // [lat, lon, label]
+    let markerA = null;
+    let markerB = null;
+
+    // Initialize MapLibre GL
     const map = new maplibregl.Map({
       container: 'map',
       style: STYLES.voyager,
@@ -728,7 +895,7 @@
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
 
-    // Style Switcher Handlers
+    // Basemap Switcher
     function setMapStyle(styleKey) {
       if (currentStyleKey === styleKey) return;
       currentStyleKey = styleKey;
@@ -756,14 +923,224 @@
     document.getElementById('btnStyleLight').addEventListener('click', () => setMapStyle('light'));
     document.getElementById('btnStyleOsm').addEventListener('click', () => setMapStyle('osm'));
 
-    // Re-render route layers when style finishes reloading
-    map.on('style.load', () => {
-      if (lastRenderedVillage) {
-        renderVillage(lastRenderedVillage);
+    // Mode Switcher (Explore vs Navigate)
+    const tabExplore = document.getElementById('tabExplore');
+    const tabNavigate = document.getElementById('tabNavigate');
+    const secExplore = document.getElementById('sectionExplore');
+    const secNavigate = document.getElementById('sectionNavigate');
+
+    tabExplore.addEventListener('click', () => {
+      currentMode = 'explore';
+      tabExplore.classList.add('active');
+      tabNavigate.classList.remove('active');
+      secExplore.style.display = 'flex';
+      secNavigate.style.display = 'none';
+      clearNavRoute();
+      if (lastRenderedVillage) renderVillage(lastRenderedVillage);
+    });
+
+    tabNavigate.addEventListener('click', () => {
+      currentMode = 'navigate';
+      tabNavigate.classList.add('active');
+      tabExplore.classList.remove('active');
+      secExplore.style.display = 'none';
+      secNavigate.style.display = 'flex';
+      clearVillageMarkers();
+
+      // If user location exists, auto-fill Point A
+      if (userLocation && !pointA) {
+        setPointA(userLocation[0], userLocation[1], "Current GPS Location");
       }
     });
 
-    function clearMarkers() {
+    // Detect GPS Location
+    function detectUserLocation(callback) {
+      if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const lat = pos.coords.latitude;
+          const lon = pos.coords.longitude;
+          userLocation = [lat, lon];
+
+          // Add User Location Pulse Pin
+          const el = document.createElement('div');
+          el.className = 'user-gps-marker';
+          new maplibregl.Marker({ element: el })
+            .setLngLat([lon, lat])
+            .setPopup(new maplibregl.Popup({ offset: 12 }).setHTML("<b>📍 Your Current Location</b>"))
+            .addTo(map);
+
+          map.flyTo({ center: [lon, lat], zoom: 13, duration: 1500 });
+          if (callback) callback(lat, lon);
+        },
+        (err) => {
+          console.warn("GPS error:", err);
+          alert("Could not detect location. Please allow location permissions in your browser.");
+        },
+        { enableHighAccuracy: true, timeout: 8000 }
+      );
+    }
+
+    document.getElementById('btnFloatingGps').addEventListener('click', () => {
+      detectUserLocation((lat, lon) => {
+        if (currentMode === 'navigate') {
+          setPointA(lat, lon, "Current GPS Location");
+        }
+      });
+    });
+
+    document.getElementById('btnSetAFromGps').addEventListener('click', () => {
+      detectUserLocation((lat, lon) => {
+        setPointA(lat, lon, "Current GPS Location");
+      });
+    });
+
+    // Map Click Handler for A to B Navigation
+    map.on('click', (e) => {
+      if (currentMode !== 'navigate') return;
+      const lon = e.lngLat.lng;
+      const lat = e.lngLat.lat;
+
+      if (!pointA) {
+        setPointA(lat, lon, `Location (${lat.toFixed(3)}, ${lon.toFixed(3)})`);
+      } else if (!pointB) {
+        setPointB(lat, lon, `Location (${lat.toFixed(3)}, ${lon.toFixed(3)})`);
+        computeAndDrawABRoute();
+      } else {
+        // Reset and set new destination
+        setPointB(lat, lon, `Location (${lat.toFixed(3)}, ${lon.toFixed(3)})`);
+        computeAndDrawABRoute();
+      }
+    });
+
+    function setPointA(lat, lon, label) {
+      pointA = [lat, lon, label];
+      document.getElementById('statusPointA').textContent = `📍 ${label}`;
+      if (markerA) markerA.remove();
+
+      const el = document.createElement('div');
+      el.className = 'marker-3d-symbol';
+      el.textContent = '🟢';
+      markerA = new maplibregl.Marker({ element: el })
+        .setLngLat([lon, lat])
+        .setPopup(new maplibregl.Popup().setHTML(`<b>Origin (A):</b> ${label}`))
+        .addTo(map);
+    }
+
+    function setPointB(lat, lon, label) {
+      pointB = [lat, lon, label];
+      document.getElementById('statusPointB').textContent = `🏁 ${label}`;
+      if (markerB) markerB.remove();
+
+      const el = document.createElement('div');
+      el.className = 'marker-3d-symbol';
+      el.textContent = '🔴';
+      markerB = new maplibregl.Marker({ element: el })
+        .setLngLat([lon, lat])
+        .setPopup(new maplibregl.Popup().setHTML(`<b>Destination (B):</b> ${label}`))
+        .addTo(map);
+    }
+
+    // Compute and Draw Point A to Point B Road Navigation
+    async function computeAndDrawABRoute() {
+      if (!pointA || !pointB) return;
+
+      const [latA, lonA] = pointA;
+      const [latB, lonB] = pointB;
+
+      const url = `https://router.project-osrm.org/route/v1/driving/${lonA},${latA};${lonB},${latB}?overview=full&geometries=geojson`;
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.routes && data.routes.length > 0) {
+          const r = data.routes[0];
+          const coords = r.geometry.coordinates;
+          const distKm = (r.distance / 1000).toFixed(1);
+          const mins = Math.max(1, Math.round(r.duration / 60));
+
+          // Draw Live Route
+          drawNeonRoute('nav-route', coords, '#0284c7', 'rgba(2, 132, 199, 0.45)', false);
+
+          // Update Bar
+          const bar = document.getElementById('navSummaryBar');
+          bar.style.display = 'flex';
+          document.getElementById('navEta').textContent = `🚗 ${mins} mins drive`;
+          document.getElementById('navDist').textContent = `Total Distance: ${distKm} km`;
+
+          // Fit Camera
+          const bounds = new maplibregl.LngLatBounds();
+          coords.forEach(pt => bounds.extend(pt));
+          map.fitBounds(bounds, { padding: 80, maxZoom: 15, duration: 1200 });
+        }
+      } catch (err) {
+        console.error("Navigation routing error:", err);
+      }
+    }
+
+    function clearNavRoute() {
+      if (markerA) { markerA.remove(); markerA = null; }
+      if (markerB) { markerB.remove(); markerB = null; }
+      pointA = null;
+      pointB = null;
+      document.getElementById('statusPointA').textContent = "Click map or use GPS";
+      document.getElementById('statusPointB').textContent = "Click map to set destination";
+      document.getElementById('navSummaryBar').style.display = 'none';
+
+      ['nav-route', 'nav-route-glow', 'nav-route-casing'].forEach(id => {
+        if (map.getLayer(id)) map.removeLayer(id);
+        if (map.getSource(id)) map.removeSource(id);
+      });
+    }
+
+    document.getElementById('btnClearNav').addEventListener('click', clearNavRoute);
+
+    // Quick presets (A to nearest PHC or Highway)
+    document.getElementById('btnNavNearestPhc').addEventListener('click', () => {
+      if (!pointA) {
+        alert("Please set Point A (Origin) first using GPS or by clicking on the map!");
+        return;
+      }
+      // Target nearest health facility in loaded district or vicinity
+      if (currentDistrictData && currentDistrictData.villages.length > 0) {
+        const target = currentDistrictData.villages[0].precomputed_routing.nearest_health;
+        const coords = decodePolyline(target.polyline);
+        const end = coords[coords.length - 1];
+        setPointB(end[1], end[0], `Nearest Health (${target.name})`);
+        computeAndDrawABRoute();
+      } else {
+        alert("Select a district from 'Explore' tab first to load facilities!");
+      }
+    });
+
+    document.getElementById('btnNavNearestHw').addEventListener('click', () => {
+      if (!pointA) {
+        alert("Please set Point A (Origin) first using GPS or by clicking on the map!");
+        return;
+      }
+      if (currentDistrictData && currentDistrictData.villages.length > 0) {
+        const target = currentDistrictData.villages[0].precomputed_routing.nearest_highway;
+        const coords = decodePolyline(target.polyline);
+        const end = coords[coords.length - 1];
+        setPointB(end[1], end[0], `Nearest Highway (${target.ref})`);
+        computeAndDrawABRoute();
+      } else {
+        alert("Select a district from 'Explore' tab first to load highway corridors!");
+      }
+    });
+
+    // Re-render route layers when style finishes reloading
+    map.on('style.load', () => {
+      if (currentMode === 'explore' && lastRenderedVillage) {
+        renderVillage(lastRenderedVillage);
+      } else if (currentMode === 'navigate' && pointA && pointB) {
+        computeAndDrawABRoute();
+      }
+    });
+
+    function clearVillageMarkers() {
       markers.forEach(m => m.remove());
       markers = [];
       ['phc-route', 'phc-route-glow', 'phc-route-casing', 'hw-route', 'hw-route-glow', 'hw-route-casing'].forEach(id => {
@@ -772,7 +1149,6 @@
       });
     }
 
-    // Polyline decoder
     function decodePolyline(str, precision = 5) {
       let index = 0, lat = 0, lng = 0, coordinates = [];
       let factor = Math.pow(10, precision);
@@ -799,7 +1175,6 @@
       return coordinates;
     }
 
-    // Fetch physical turn-by-turn road curves from OSM routing engine
     async function fetchRoadCurvedRoute(fromCoords, toCoords) {
       const url = `https://router.project-osrm.org/route/v1/driving/${fromCoords[1]},${fromCoords[0]};${toCoords[1]},${toCoords[0]}?overview=full&geometries=geojson`;
       try {
@@ -819,7 +1194,6 @@
       return null;
     }
 
-    // Load National Root Index
     async function initApp() {
       try {
         const res = await fetch('api/v1/india.json');
@@ -839,7 +1213,6 @@
       }
     }
 
-    // State change handler
     document.getElementById('stateSelect').addEventListener('change', async (e) => {
       const stateSlug = e.target.value;
       const districtGroup = document.getElementById('districtGroup');
@@ -848,7 +1221,7 @@
       const villageGroup = document.getElementById('villageGroup');
       const villageDetail = document.getElementById('villageDetail');
 
-      clearMarkers();
+      clearVillageMarkers();
       lastRenderedVillage = null;
       districtSelect.innerHTML = '<option value="">Loading districts...</option>';
       analyticsPanel.style.display = 'none';
@@ -873,7 +1246,6 @@
       });
     });
 
-    // District change handler
     document.getElementById('districtSelect').addEventListener('change', async (e) => {
       const stateSlug = document.getElementById('stateSelect').value;
       const districtSlug = e.target.value;
@@ -882,7 +1254,7 @@
       const villageDetail = document.getElementById('villageDetail');
       const villageSearch = document.getElementById('villageSearch');
 
-      clearMarkers();
+      clearVillageMarkers();
       lastRenderedVillage = null;
       villageDetail.style.display = 'none';
       villageSearch.value = '';
@@ -896,7 +1268,6 @@
       const res = await fetch(`api/v1/districts/${stateSlug}/${districtSlug}.json`);
       currentDistrictData = await res.json();
 
-      // Show Analytics
       analyticsPanel.style.display = 'flex';
       villageGroup.style.display = 'flex';
 
@@ -931,7 +1302,6 @@
       });
     }
 
-    // Search Typeahead
     document.getElementById('villageSearch').addEventListener('input', (e) => {
       if (!currentDistrictData) return;
       const q = e.target.value.toLowerCase().trim();
@@ -943,7 +1313,6 @@
       populateVillageList(matched);
     });
 
-    // Village Select
     document.getElementById('villageSelect').addEventListener('change', (e) => {
       const villageId = Number(e.target.value);
       const village = currentDistrictData.villages.find(v => v.id === villageId);
@@ -952,13 +1321,12 @@
 
     async function renderVillage(v) {
       lastRenderedVillage = v;
-      clearMarkers();
+      clearVillageMarkers();
 
       const [vLat, vLon] = v.coords;
       const phc = v.precomputed_routing.nearest_health;
       const hw = v.precomputed_routing.nearest_highway;
 
-      // Update UI Card
       const detail = document.getElementById('villageDetail');
       detail.style.display = 'flex';
       document.getElementById('vName').textContent = v.name;
@@ -983,7 +1351,7 @@
         alert('API URL copied to clipboard!');
       };
 
-      // 1. Village Pulsing Radar Beacon Marker
+      // Village Beacon
       const vEl = document.createElement('div');
       vEl.className = 'beacon-wrapper';
       vEl.innerHTML = '<div class="beacon-wave"></div><div class="beacon-core"></div>';
@@ -993,14 +1361,13 @@
         .addTo(map);
       markers.push(vMarker);
 
-      // Precomputed route fallbacks
       let phcRouteCoords = decodePolyline(phc.polyline);
       let hwRouteCoords = decodePolyline(hw.polyline);
 
       const phcEnd = phcRouteCoords[phcRouteCoords.length - 1];
       const hwEnd = hwRouteCoords[hwRouteCoords.length - 1];
 
-      // 2. Hospital 3D Marker
+      // Hospital
       const phcEl = document.createElement('div');
       phcEl.className = 'marker-3d-symbol';
       phcEl.textContent = '🏥';
@@ -1010,7 +1377,7 @@
         .addTo(map);
       markers.push(phcMarker);
 
-      // 3. Highway 3D Marker
+      // Highway
       const hwEl = document.createElement('div');
       hwEl.className = 'marker-3d-symbol';
       hwEl.textContent = '🛣️';
@@ -1020,18 +1387,15 @@
         .addTo(map);
       markers.push(hwMarker);
 
-      // Render Multi-Layer Eye-Popping Route Lines
       drawNeonRoute('phc-route', phcRouteCoords, '#00c853', 'rgba(0, 200, 83, 0.45)', false);
       drawNeonRoute('hw-route', hwRouteCoords, '#ff6b00', 'rgba(255, 107, 0, 0.45)', true);
 
-      // Smooth camera fly-to bounding box
       const bounds = new maplibregl.LngLatBounds();
       bounds.extend([vLon, vLat]);
       bounds.extend(phcEnd);
       bounds.extend(hwEnd);
       map.fitBounds(bounds, { padding: 90, maxZoom: 15, duration: 1000 });
 
-      // 4. Asynchronously snap to REAL PHYSICAL ROAD CURVES
       fetchRoadCurvedRoute([vLat, vLon], [phcEnd[1], phcEnd[0]]).then(roadRes => {
         if (roadRes && roadRes.coordinates.length > 2) {
           drawNeonRoute('phc-route', roadRes.coordinates, '#00c853', 'rgba(0, 200, 83, 0.45)', false);
@@ -1049,7 +1413,6 @@
       });
     }
 
-    // 3-Layer Neon High-Voltage Route Drawer
     function drawNeonRoute(id, coords, coreColor, glowColor, dashed = false) {
       const glowId = `${id}-glow`;
       const casingId = `${id}-casing`;
@@ -1067,7 +1430,6 @@
         }
       });
 
-      // Layer 1: Outer Neon Halo Glow
       map.addLayer({
         id: glowId,
         type: 'line',
@@ -1081,7 +1443,6 @@
         }
       });
 
-      // Layer 2: Contrast Casing
       map.addLayer({
         id: casingId,
         type: 'line',
@@ -1094,7 +1455,6 @@
         }
       });
 
-      // Layer 3: Vibrant Core Line
       const corePaint = {
         'line-color': coreColor,
         'line-width': dashed ? 4 : 4.5,

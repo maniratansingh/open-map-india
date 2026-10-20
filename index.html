@@ -354,6 +354,77 @@
       border: 1px dashed var(--input-border);
     }
 
+    /* Predictive Search Dropdown */
+    .search-container {
+      position: relative;
+      width: 100%;
+    }
+
+    .predictive-dropdown {
+      position: absolute;
+      top: calc(100% + 6px);
+      left: 0;
+      right: 0;
+      max-height: 220px;
+      overflow-y: auto;
+      background: var(--bg-panel);
+      backdrop-filter: blur(28px);
+      border: 1.5px solid var(--panel-border);
+      border-radius: 14px;
+      box-shadow: 0 16px 35px rgba(0, 0, 0, 0.25);
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .predictive-item {
+      padding: 9px 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 1px solid var(--card-border-inner);
+      transition: background 0.15s;
+    }
+
+    .predictive-item:last-child {
+      border-bottom: none;
+    }
+
+    .predictive-item:hover, .predictive-item.selected {
+      background: rgba(2, 132, 199, 0.12);
+    }
+
+    .pi-icon {
+      font-size: 16px;
+      width: 22px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .pi-text {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pi-main {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--text-title);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .pi-sub {
+      font-size: 10px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
     /* Live Route Stats Bar */
     .route-summary-bar {
       background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
@@ -711,6 +782,15 @@
       
       <!-- ================= SECTION 1: EXPLORE MODE ================= -->
       <div id="sectionExplore" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Universal India Search Bar with Predictive Dropdown -->
+        <div class="field-group">
+          <label>🔍 Quick Jump (Search Any Place in India)</label>
+          <div class="search-container">
+            <input type="text" id="omniSearch" placeholder="Type city, district, or town (e.g. Basti, Pune, Patna)..." autocomplete="off" />
+            <div class="predictive-dropdown" id="omniDropdown" style="display: none;"></div>
+          </div>
+        </div>
+
         <!-- State Selector -->
         <div class="field-group">
           <label>1. Select State / UT</label>
@@ -809,16 +889,24 @@
             <span class="nav-point-title">🟢 Point A (Origin)</span>
             <button class="btn-quick-gps" id="btnSetAFromGps">🎯 My Location</button>
           </div>
-          <div class="nav-status-text" id="statusPointA">Click map or use GPS</div>
+          <div class="search-container">
+            <input type="text" id="inputSearchA" placeholder="Search origin (e.g. Kalwari, Basti)..." autocomplete="off" />
+            <div class="predictive-dropdown" id="dropdownA" style="display: none;"></div>
+          </div>
+          <div class="nav-status-text" id="statusPointA">Click map, search, or use GPS</div>
         </div>
 
         <!-- Point B (Destination) -->
         <div class="nav-point-box">
           <div class="nav-point-header">
             <span class="nav-point-title">🔴 Point B (Destination)</span>
-            <span style="font-size: 11px; color: var(--text-muted);">Click on map</span>
+            <span style="font-size: 11px; color: var(--text-muted);">Search or click map</span>
           </div>
-          <div class="nav-status-text" id="statusPointB">Click map to set destination</div>
+          <div class="search-container">
+            <input type="text" id="inputSearchB" placeholder="Search destination (e.g. Semariyawan, NH28)..." autocomplete="off" />
+            <div class="predictive-dropdown" id="dropdownB" style="display: none;"></div>
+          </div>
+          <div class="nav-status-text" id="statusPointB">Click map or search destination</div>
         </div>
 
         <!-- Live Route Navigation Summary -->
@@ -1019,6 +1107,8 @@
     function setPointA(lat, lon, label) {
       pointA = [lat, lon, label];
       document.getElementById('statusPointA').textContent = `📍 ${label}`;
+      const inputA = document.getElementById('inputSearchA');
+      if (inputA && inputA.value !== label) inputA.value = label;
       if (markerA) markerA.remove();
 
       const el = document.createElement('div');
@@ -1033,6 +1123,8 @@
     function setPointB(lat, lon, label) {
       pointB = [lat, lon, label];
       document.getElementById('statusPointB').textContent = `🏁 ${label}`;
+      const inputB = document.getElementById('inputSearchB');
+      if (inputB && inputB.value !== label) inputB.value = label;
       if (markerB) markerB.remove();
 
       const el = document.createElement('div');
@@ -1085,8 +1177,12 @@
       if (markerB) { markerB.remove(); markerB = null; }
       pointA = null;
       pointB = null;
-      document.getElementById('statusPointA').textContent = "Click map or use GPS";
-      document.getElementById('statusPointB').textContent = "Click map to set destination";
+      const inputA = document.getElementById('inputSearchA');
+      const inputB = document.getElementById('inputSearchB');
+      if (inputA) inputA.value = '';
+      if (inputB) inputB.value = '';
+      document.getElementById('statusPointA').textContent = "Click map, search, or use GPS";
+      document.getElementById('statusPointB').textContent = "Click map or search destination";
       document.getElementById('navSummaryBar').style.display = 'none';
 
       ['nav-route', 'nav-route-glow', 'nav-route-casing'].forEach(id => {
@@ -1194,10 +1290,16 @@
       return null;
     }
 
+    let searchIndex = [];
+
     async function initApp() {
       try {
-        const res = await fetch('api/v1/india.json');
-        nationalData = await res.json();
+        const [resIndia, resIndex] = await Promise.all([
+          fetch('api/v1/india.json'),
+          fetch('api/v1/search_index.json')
+        ]);
+        nationalData = await resIndia.json();
+        searchIndex = await resIndex.json();
 
         const stateSelect = document.getElementById('stateSelect');
         stateSelect.innerHTML = '<option value="">-- Choose State / UT --</option>';
@@ -1208,9 +1310,312 @@
           opt.textContent = `${s.state} (${s.total_districts} districts)`;
           stateSelect.appendChild(opt);
         });
+
+        // Wire up 3 Predictive Search Autocompletes
+        // 1. Omni Search (Explore tab)
+        setupPredictiveSearch('omniSearch', 'omniDropdown', async (item) => {
+          if (item.type === 'district') {
+            await selectDistrict(item.state_slug, item.district_slug);
+          } else if (item.type === 'village') {
+            renderVillage(item.village);
+          } else if (item.type === 'place') {
+            map.flyTo({ center: [item.lon, item.lat], zoom: 14, duration: 1500 });
+            const el = document.createElement('div');
+            el.className = 'marker-3d-symbol';
+            el.textContent = item.icon || '📍';
+            const m = new maplibregl.Marker({ element: el })
+              .setLngLat([item.lon, item.lat])
+              .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML(`<b>${item.main}</b><br><span style="font-size:12px;color:#64748b;">${item.sub}</span>`))
+              .addTo(map);
+            m.togglePopup();
+            markers.push(m);
+          }
+        });
+
+        // 2. Point A Search (Navigation tab)
+        setupPredictiveSearch('inputSearchA', 'dropdownA', (item) => {
+          setPointA(item.lat, item.lon, item.main);
+          if (pointB) {
+            computeAndDrawABRoute();
+          } else {
+            map.flyTo({ center: [item.lon, item.lat], zoom: 12, duration: 1200 });
+          }
+        });
+
+        // 3. Point B Search (Navigation tab)
+        setupPredictiveSearch('inputSearchB', 'dropdownB', (item) => {
+          setPointB(item.lat, item.lon, item.main);
+          if (pointA) {
+            computeAndDrawABRoute();
+          } else {
+            map.flyTo({ center: [item.lon, item.lat], zoom: 12, duration: 1200 });
+          }
+        });
+
       } catch (err) {
-        console.error('Failed to load national root:', err);
+        console.error('Failed to initialize app:', err);
       }
+    }
+
+    async function selectDistrict(stateSlug, districtSlug, villageIdToSelect = null) {
+      const stateSelect = document.getElementById('stateSelect');
+      const districtGroup = document.getElementById('districtGroup');
+      const districtSelect = document.getElementById('districtSelect');
+      const analyticsPanel = document.getElementById('analyticsPanel');
+      const villageGroup = document.getElementById('villageGroup');
+      const villageDetail = document.getElementById('villageDetail');
+      const villageSearch = document.getElementById('villageSearch');
+
+      clearVillageMarkers();
+      lastRenderedVillage = null;
+      villageDetail.style.display = 'none';
+      villageSearch.value = '';
+
+      stateSelect.value = stateSlug;
+      districtGroup.style.display = 'flex';
+
+      const stateRes = await fetch(`api/v1/states/${stateSlug}.json`);
+      const stateData = await stateRes.json();
+
+      districtSelect.innerHTML = '<option value="">-- Choose District --</option>';
+      stateData.districts.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.district_slug;
+        opt.textContent = `${d.district} (${d.total_settlements} settlements)`;
+        districtSelect.appendChild(opt);
+      });
+      districtSelect.value = districtSlug;
+
+      const res = await fetch(`api/v1/districts/${stateSlug}/${districtSlug}.json`);
+      currentDistrictData = await res.json();
+
+      analyticsPanel.style.display = 'flex';
+      villageGroup.style.display = 'flex';
+
+      document.getElementById('analyticsDistrictName').textContent = `${currentDistrictData.district} Infrastructure`;
+      document.getElementById('analyticsScore').textContent = `Score: ${currentDistrictData.analytics.infrastructure_score}/100`;
+      document.getElementById('statPhcKm').textContent = `${currentDistrictData.analytics.avg_phc_distance_km} km`;
+      document.getElementById('statHwPct').textContent = `${currentDistrictData.analytics.pct_villages_under_5km_highway}%`;
+      document.getElementById('statHwKm').textContent = `${currentDistrictData.analytics.avg_highway_distance_km} km`;
+      document.getElementById('statSettlements').textContent = currentDistrictData.total_settlements.toLocaleString();
+
+      if (currentDistrictData.bbox) {
+        const [minx, miny, maxx, maxy] = currentDistrictData.bbox;
+        map.fitBounds([[minx, miny], [maxx, maxy]], { padding: 50, maxZoom: 12, duration: 1200 });
+      }
+
+      populateVillageList(currentDistrictData.villages.slice(0, 50));
+
+      if (villageIdToSelect) {
+        const v = currentDistrictData.villages.find(v => v.id === villageIdToSelect);
+        if (v) renderVillage(v);
+      }
+    }
+
+    // Predictive Search Autocomplete Engine
+    function setupPredictiveSearch(inputId, dropdownId, onSelect) {
+      const inputEl = document.getElementById(inputId);
+      const dropEl = document.getElementById(dropdownId);
+      if (!inputEl || !dropEl) return;
+
+      let debounceTimer = null;
+      let activeIndex = -1;
+      let currentResults = [];
+
+      function renderDropdown(items) {
+        currentResults = items;
+        activeIndex = -1;
+        if (!items.length) {
+          dropEl.style.display = 'none';
+          dropEl.innerHTML = '';
+          return;
+        }
+
+        dropEl.innerHTML = items.map((item, idx) => `
+          <div class="predictive-item" data-idx="${idx}">
+            <span class="pi-icon">${item.icon}</span>
+            <div class="pi-text">
+              <span class="pi-main">${escapeHtml(item.main)}</span>
+              <span class="pi-sub">${escapeHtml(item.sub)}</span>
+            </div>
+          </div>
+        `).join('');
+
+        dropEl.style.display = 'flex';
+
+        dropEl.querySelectorAll('.predictive-item').forEach(el => {
+          el.addEventListener('click', () => {
+            const idx = parseInt(el.getAttribute('data-idx'));
+            chooseItem(currentResults[idx]);
+          });
+        });
+      }
+
+      function chooseItem(item) {
+        if (!item) return;
+        inputEl.value = item.main;
+        dropEl.style.display = 'none';
+        dropEl.innerHTML = '';
+        onSelect(item);
+      }
+
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text || '';
+        return div.innerHTML;
+      }
+
+      inputEl.addEventListener('input', () => {
+        const q = inputEl.value.trim().toLowerCase();
+        if (q.length < 2) {
+          dropEl.style.display = 'none';
+          dropEl.innerHTML = '';
+          return;
+        }
+
+        // Step 1: Instant Local District & Village Search (0ms)
+        const localMatches = [];
+
+        // Check 594 districts in national search index
+        if (searchIndex && searchIndex.length) {
+          const matchedDistricts = searchIndex.filter(d => 
+            d.name.toLowerCase().includes(q) || d.state.toLowerCase().includes(q)
+          ).sort((a, b) => {
+            const aName = a.name.toLowerCase();
+            const bName = b.name.toLowerCase();
+            if (aName === q) return -1;
+            if (bName === q) return 1;
+            if (aName.startsWith(q) && !bName.startsWith(q)) return -1;
+            if (!aName.startsWith(q) && bName.startsWith(q)) return 1;
+            return a.name.localeCompare(b.name);
+          }).slice(0, 5);
+
+          matchedDistricts.forEach(d => {
+            localMatches.push({
+              type: 'district',
+              icon: '🏛️',
+              main: `${d.name} District`,
+              sub: `${d.state} • ${d.settlements.toLocaleString()} settlements • Infrastructure Score: ${d.score}/100`,
+              lat: d.lat,
+              lon: d.lon,
+              bbox: d.bbox,
+              state_slug: d.state_slug,
+              district_slug: d.district_slug,
+              raw: d
+            });
+          });
+        }
+
+        // Check loaded district villages
+        if (currentDistrictData && currentDistrictData.villages) {
+          const matchedVillages = currentDistrictData.villages.filter(v =>
+            v.name.toLowerCase().includes(q)
+          ).slice(0, 3);
+
+          matchedVillages.forEach(v => {
+            localMatches.push({
+              type: 'village',
+              icon: '🏡',
+              main: v.name,
+              sub: `${currentDistrictData.district}, ${currentDistrictData.state} (${v.type.toUpperCase()})`,
+              lat: v.coords[0],
+              lon: v.coords[1],
+              village: v
+            });
+          });
+        }
+
+        if (localMatches.length > 0) {
+          renderDropdown(localMatches);
+        }
+
+        // Step 2: Debounced Remote India Geocoding (OSM Nominatim)
+        if (debounceTimer) clearTimeout(debounceTimer);
+        if (q.length >= 3) {
+          debounceTimer = setTimeout(async () => {
+            try {
+              const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(inputEl.value.trim())}&countrycodes=in&limit=4&addressdetails=1`);
+              const data = await res.json();
+              if (Array.isArray(data) && data.length > 0) {
+                const remoteMatches = data.map(item => {
+                  let icon = '📍';
+                  if (item.type === 'hospital' || item.type === 'clinic') icon = '🏥';
+                  else if (item.class === 'highway') icon = '🛣️';
+                  else if (item.class === 'place' && item.type === 'city') icon = '🏙️';
+                  else if (item.class === 'place' && (item.type === 'town' || item.type === 'village')) icon = '🏡';
+
+                  const parts = item.display_name.split(', ');
+                  const sub = parts.slice(1, 4).join(', ');
+
+                  return {
+                    type: 'place',
+                    icon: icon,
+                    main: item.name || parts[0],
+                    sub: sub || item.display_name,
+                    lat: parseFloat(item.lat),
+                    lon: parseFloat(item.lon),
+                    raw: item
+                  };
+                });
+
+                const combined = [...localMatches];
+                remoteMatches.forEach(rm => {
+                  if (!combined.some(c => Math.abs(c.lat - rm.lat) < 0.01 && Math.abs(c.lon - rm.lon) < 0.01)) {
+                    combined.push(rm);
+                  }
+                });
+
+                renderDropdown(combined.slice(0, 8));
+              }
+            } catch (err) {
+              console.warn('Predictive geocode fetch error:', err);
+            }
+          }, 280);
+        }
+      });
+
+      // Keyboard Accessibility (Arrows + Enter + Esc)
+      inputEl.addEventListener('keydown', (e) => {
+        const items = dropEl.querySelectorAll('.predictive-item');
+        if (!items.length || dropEl.style.display === 'none') return;
+
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          activeIndex = (activeIndex + 1) % items.length;
+          updateActiveItem(items);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          activeIndex = (activeIndex - 1 + items.length) % items.length;
+          updateActiveItem(items);
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          if (activeIndex >= 0 && activeIndex < currentResults.length) {
+            chooseItem(currentResults[activeIndex]);
+          } else if (currentResults.length > 0) {
+            chooseItem(currentResults[0]);
+          }
+        } else if (e.key === 'Escape') {
+          dropEl.style.display = 'none';
+        }
+      });
+
+      function updateActiveItem(items) {
+        items.forEach((item, idx) => {
+          if (idx === activeIndex) {
+            item.classList.add('selected');
+            item.scrollIntoView({ block: 'nearest' });
+          } else {
+            item.classList.remove('selected');
+          }
+        });
+      }
+
+      // Dismiss dropdown on outside click
+      document.addEventListener('click', (e) => {
+        if (!inputEl.contains(e.target) && !dropEl.contains(e.target)) {
+          dropEl.style.display = 'none';
+        }
+      });
     }
 
     document.getElementById('stateSelect').addEventListener('change', async (e) => {
@@ -1249,41 +1654,8 @@
     document.getElementById('districtSelect').addEventListener('change', async (e) => {
       const stateSlug = document.getElementById('stateSelect').value;
       const districtSlug = e.target.value;
-      const analyticsPanel = document.getElementById('analyticsPanel');
-      const villageGroup = document.getElementById('villageGroup');
-      const villageDetail = document.getElementById('villageDetail');
-      const villageSearch = document.getElementById('villageSearch');
-
-      clearVillageMarkers();
-      lastRenderedVillage = null;
-      villageDetail.style.display = 'none';
-      villageSearch.value = '';
-
-      if (!districtSlug) {
-        analyticsPanel.style.display = 'none';
-        villageGroup.style.display = 'none';
-        return;
-      }
-
-      const res = await fetch(`api/v1/districts/${stateSlug}/${districtSlug}.json`);
-      currentDistrictData = await res.json();
-
-      analyticsPanel.style.display = 'flex';
-      villageGroup.style.display = 'flex';
-
-      document.getElementById('analyticsDistrictName').textContent = `${currentDistrictData.district} Infrastructure`;
-      document.getElementById('analyticsScore').textContent = `Score: ${currentDistrictData.analytics.infrastructure_score}/100`;
-      document.getElementById('statPhcKm').textContent = `${currentDistrictData.analytics.avg_phc_distance_km} km`;
-      document.getElementById('statHwPct').textContent = `${currentDistrictData.analytics.pct_villages_under_5km_highway}%`;
-      document.getElementById('statHwKm').textContent = `${currentDistrictData.analytics.avg_highway_distance_km} km`;
-      document.getElementById('statSettlements').textContent = currentDistrictData.total_settlements.toLocaleString();
-
-      if (currentDistrictData.bbox) {
-        const [minx, miny, maxx, maxy] = currentDistrictData.bbox;
-        map.fitBounds([[minx, miny], [maxx, maxy]], { padding: 50, maxZoom: 12 });
-      }
-
-      populateVillageList(currentDistrictData.villages.slice(0, 50));
+      if (!districtSlug) return;
+      await selectDistrict(stateSlug, districtSlug);
     });
 
     function populateVillageList(villages) {

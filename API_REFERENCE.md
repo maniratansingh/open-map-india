@@ -97,7 +97,8 @@ To get all districts in a state, append `/states/<state_slug>.json`:
 
 ## 3. District Package Endpoints (All 594 Districts)
 
-> 📖 **Full National Directory**: For the complete, state-wise directory of all 594 districts with clickable links and infrastructure scorecards, see [**`DISTRICT_DIRECTORY.md`**](DISTRICT_DIRECTORY.md).
+> 📖 **Whole India Master Directory**: For all 594 districts A-to-Z and state rankings, see [**`INDIA_DIRECTORY.md`**](INDIA_DIRECTORY.md).  
+> 🗺️ **State-by-State Directory**: For state-wise grouped district tables, see [**`DISTRICT_DIRECTORY.md`**](DISTRICT_DIRECTORY.md).
 
 Each district endpoint delivers all villages, coordinates, nearest PHC/hospital, nearest highway junction, and district infrastructure analytics:
 

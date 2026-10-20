@@ -32,8 +32,10 @@ OpenMapIndia is strictly designed to be **100% self-contained on GitHub Pages** 
 
 ## 📚 Complete API Reference & Documentation
 
-* **Complete State-Wise District Directory (594 Districts Linked)**:  
-  👉 Browse the [**DISTRICT_DIRECTORY.md**](DISTRICT_DIRECTORY.md) for direct links to all 594 district datasets!
+* **Whole India Master Directory (All 594 Districts A-to-Z + National Rankings)**:  
+  👉 Browse the [**INDIA_DIRECTORY.md**](INDIA_DIRECTORY.md) for the national master index and state rankings!
+* **State-Wise District Directory (State-by-State Grouping)**:  
+  👉 Browse the [**DISTRICT_DIRECTORY.md**](DISTRICT_DIRECTORY.md) for state-by-state district tables!
 * **API Documentation & Schema Reference**:  
   👉 Read the [**API_REFERENCE.md**](API_REFERENCE.md)
 

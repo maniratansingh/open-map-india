@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpenMapIndia — National Geocompute & Rural Road Intelligence</title>
+  <title>OpenMapIndia — Apple & Google Hybrid National Geocompute Engine</title>
   
   <!-- MapLibre GL CSS & JS -->
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
@@ -11,32 +11,67 @@
 
   <style>
     :root {
-      --bg-dark: #090d16;
-      --card-bg: rgba(15, 23, 42, 0.88);
-      --card-border: rgba(255, 255, 255, 0.12);
-      --text-main: #f8fafc;
+      --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+      --primary: #0284c7;
+      --primary-glow: rgba(2, 132, 199, 0.35);
+      --emerald: #059669;
+      --amber: #d97706;
+      --rose: #e11d48;
+    }
+
+    /* Light Theme (Default - Apple Maps Vibe) */
+    body.theme-light {
+      --bg-panel: rgba(255, 255, 255, 0.88);
+      --panel-border: rgba(0, 0, 0, 0.08);
+      --panel-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
+      --text-title: #0f172a;
+      --text-sub: #475569;
+      --text-muted: #64748b;
+      --input-bg: rgba(241, 245, 249, 0.9);
+      --input-border: rgba(203, 213, 225, 0.8);
+      --card-inner: rgba(248, 250, 252, 0.95);
+      --card-border-inner: rgba(226, 232, 240, 0.8);
+      --pill-bg: rgba(0, 0, 0, 0.04);
+      --pill-border: rgba(0, 0, 0, 0.08);
+      --pill-text: #334155;
+      --btn-sec-bg: rgba(0, 0, 0, 0.05);
+      --btn-sec-text: #0f172a;
+      --route-casing: #ffffff;
+    }
+
+    /* Dark Theme (Midnight Cyberpunk Vibe) */
+    body.theme-dark {
+      --bg-panel: rgba(15, 23, 42, 0.88);
+      --panel-border: rgba(255, 255, 255, 0.12);
+      --panel-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.7);
+      --text-title: #f8fafc;
+      --text-sub: #cbd5e1;
       --text-muted: #94a3b8;
-      --primary: #38bdf8;
-      --primary-hover: #0ea5e9;
-      --emerald: #10b981;
-      --amber: #f59e0b;
-      --rose: #f43f5e;
-      --indigo: #6366f1;
+      --input-bg: rgba(2, 6, 23, 0.7);
+      --input-border: rgba(255, 255, 255, 0.15);
+      --card-inner: rgba(30, 41, 59, 0.6);
+      --card-border-inner: rgba(255, 255, 255, 0.08);
+      --pill-bg: rgba(255, 255, 255, 0.06);
+      --pill-border: rgba(255, 255, 255, 0.1);
+      --pill-text: #cbd5e1;
+      --btn-sec-bg: rgba(255, 255, 255, 0.1);
+      --btn-sec-text: #f8fafc;
+      --route-casing: #090d16;
     }
 
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, -apple-system, sans-serif;
+      font-family: var(--font-stack);
+      -webkit-font-smoothing: antialiased;
     }
 
     body {
-      background: var(--bg-dark);
-      color: var(--text-main);
       overflow: hidden;
       height: 100vh;
       width: 100vw;
+      transition: background-color 0.3s ease;
     }
 
     #map {
@@ -47,13 +82,61 @@
       right: 0;
     }
 
+    /* Style Switcher Pill Toolbar (Top Right) */
+    .style-switcher {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 20;
+      display: flex;
+      background: var(--bg-panel);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--panel-border);
+      padding: 4px;
+      border-radius: 30px;
+      box-shadow: var(--panel-shadow);
+      gap: 3px;
+    }
+
+    .style-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .style-btn:hover {
+      color: var(--text-title);
+    }
+
+    .style-btn.active {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    body.theme-dark .style-btn.active {
+      background: #38bdf8;
+      color: #090d16;
+      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.35);
+    }
+
     /* Floating UI Container */
     .app-shell {
       position: absolute;
       top: 16px;
       left: 16px;
       bottom: 16px;
-      width: 460px;
+      width: 450px;
       max-width: calc(100vw - 32px);
       z-index: 10;
       display: flex;
@@ -63,54 +146,58 @@
     }
 
     .glass-card {
-      background: var(--card-bg);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--card-border);
-      border-radius: 18px;
-      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+      background: var(--bg-panel);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--panel-border);
+      border-radius: 20px;
+      box-shadow: var(--panel-shadow);
       pointer-events: auto;
       overflow: hidden;
-      transition: all 0.25s ease;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     /* Header */
     .header-card {
-      padding: 16px 20px;
+      padding: 18px 22px;
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .brand h1 {
       font-size: 21px;
       font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 50%, #c084fc 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.6px;
+      color: var(--text-title);
     }
 
     .brand-tag {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 700;
-      background: rgba(56, 189, 248, 0.15);
-      color: var(--primary);
-      padding: 2px 8px;
+      background: rgba(2, 132, 199, 0.12);
+      color: #0284c7;
+      padding: 3px 8px;
       border-radius: 12px;
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      border: 1px solid rgba(2, 132, 199, 0.25);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+    }
+
+    body.theme-dark .brand-tag {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-color: rgba(56, 189, 248, 0.3);
     }
 
     .header-subtitle {
       font-size: 12px;
       color: var(--text-muted);
-      line-height: 1.4;
+      line-height: 1.45;
     }
 
     .national-pills {
@@ -121,23 +208,23 @@
     }
 
     .pill {
-      font-size: 10.5px;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.05);
-      color: #cbd5e1;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      font-weight: 500;
+      font-size: 11px;
+      padding: 4px 9px;
+      border-radius: 8px;
+      background: var(--pill-bg);
+      color: var(--pill-text);
+      border: 1px solid var(--pill-border);
+      font-weight: 600;
     }
 
     /* Scrollable Controls & Results */
     .controls-card {
-      padding: 16px 20px;
+      padding: 18px 22px;
       display: flex;
       flex-direction: column;
       gap: 14px;
       overflow-y: auto;
-      max-height: calc(100vh - 180px);
+      max-height: calc(100vh - 190px);
     }
 
     .field-group {
@@ -151,16 +238,16 @@
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.6px;
-      color: #94a3b8;
+      color: var(--text-muted);
     }
 
     select, input {
       width: 100%;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #fff;
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
+      color: var(--text-title);
       padding: 10px 14px;
-      border-radius: 10px;
+      border-radius: 12px;
       font-size: 13.5px;
       outline: none;
       transition: all 0.2s;
@@ -168,13 +255,13 @@
 
     select:focus, input:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 0 3px var(--primary-glow);
     }
 
     /* Analytics Panel */
     .analytics-panel {
-      background: rgba(15, 23, 42, 0.6);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--card-inner);
+      border: 1px solid var(--card-border-inner);
       border-radius: 14px;
       padding: 12px 14px;
       display: flex;
@@ -189,9 +276,9 @@
     }
 
     .analytics-title {
-      font-size: 12px;
+      font-size: 12.5px;
       font-weight: 700;
-      color: #e2e8f0;
+      color: var(--text-title);
     }
 
     .score-badge {
@@ -199,9 +286,9 @@
       font-weight: 800;
       padding: 3px 8px;
       border-radius: 6px;
-      background: rgba(16, 185, 129, 0.2);
+      background: rgba(16, 185, 129, 0.15);
       color: var(--emerald);
-      border: 1px solid rgba(16, 185, 129, 0.4);
+      border: 1px solid rgba(16, 185, 129, 0.35);
     }
 
     .stats-grid {
@@ -211,34 +298,38 @@
     }
 
     .stat-box {
-      background: rgba(255, 255, 255, 0.03);
-      padding: 7px 10px;
+      background: rgba(0, 0, 0, 0.02);
+      padding: 8px 10px;
       border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border-inner);
+    }
+
+    body.theme-dark .stat-box {
+      background: rgba(255, 255, 255, 0.03);
     }
 
     .stat-box-val {
-      font-size: 14px;
+      font-size: 14.5px;
       font-weight: 800;
-      color: #fff;
+      color: var(--text-title);
     }
 
     .stat-box-lbl {
-      font-size: 10px;
+      font-size: 10.5px;
       color: var(--text-muted);
       margin-top: 1px;
     }
 
     /* Village Result Card */
     .village-detail {
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(56, 189, 248, 0.35);
-      border-radius: 14px;
+      background: var(--card-inner);
+      border: 1.5px solid rgba(2, 132, 199, 0.35);
+      border-radius: 16px;
       padding: 14px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      box-shadow: 0 8px 20px -6px rgba(56, 189, 248, 0.15);
+      box-shadow: 0 8px 24px -6px rgba(2, 132, 199, 0.12);
     }
 
     .v-header {
@@ -248,39 +339,42 @@
     }
 
     .v-name {
-      font-size: 16px;
+      font-size: 16.5px;
       font-weight: 800;
-      color: #fff;
+      color: var(--text-title);
     }
 
     .v-type {
-      font-size: 10.5px;
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
       padding: 2px 7px;
       border-radius: 6px;
+      background: rgba(0, 0, 0, 0.06);
+      color: var(--text-muted);
+    }
+
+    body.theme-dark .v-type {
       background: rgba(255, 255, 255, 0.1);
-      color: #94a3b8;
     }
 
     /* Vector Cards */
     .vector-card {
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 10px 12px;
       display: flex;
       flex-direction: column;
       gap: 6px;
-      transition: all 0.2s;
     }
 
     .vector-phc {
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.25);
+      background: rgba(5, 150, 105, 0.07);
+      border: 1px solid rgba(5, 150, 105, 0.25);
     }
 
     .vector-hw {
-      background: rgba(245, 158, 11, 0.08);
-      border: 1px solid rgba(245, 158, 11, 0.25);
+      background: rgba(217, 119, 6, 0.07);
+      border: 1px solid rgba(217, 119, 6, 0.25);
     }
 
     .vc-top {
@@ -296,17 +390,19 @@
     .vc-title {
       font-size: 13px;
       font-weight: 700;
-      color: #f8fafc;
+      color: var(--text-title);
       flex: 1;
     }
 
     .vc-dist {
-      font-size: 13.5px;
+      font-size: 14px;
       font-weight: 800;
     }
 
-    .vc-dist-emerald { color: var(--emerald); }
-    .vc-dist-amber { color: var(--amber); }
+    .vc-dist-emerald { color: #059669; }
+    .vc-dist-amber { color: #d97706; }
+    body.theme-dark .vc-dist-emerald { color: #10b981; }
+    body.theme-dark .vc-dist-amber { color: #f59e0b; }
 
     .vc-bottom {
       display: flex;
@@ -314,25 +410,26 @@
       align-items: center;
       font-size: 11px;
       color: var(--text-muted);
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-top: 1px solid rgba(0, 0, 0, 0.04);
       padding-top: 5px;
     }
 
+    body.theme-dark .vc-bottom {
+      border-top-color: rgba(255, 255, 255, 0.06);
+    }
+
     .road-tag {
-      font-size: 10px;
-      font-weight: 600;
-      background: rgba(255, 255, 255, 0.08);
-      padding: 2px 6px;
-      border-radius: 4px;
-      color: #cbd5e1;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-sub);
     }
 
     .eta-badge {
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      font-weight: 600;
-      color: #e2e8f0;
+      font-weight: 700;
+      color: var(--text-title);
     }
 
     /* Actions */
@@ -344,8 +441,8 @@
 
     .btn {
       flex: 1;
-      padding: 9px 12px;
-      border-radius: 8px;
+      padding: 10px 12px;
+      border-radius: 10px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
@@ -359,48 +456,74 @@
 
     .btn-primary {
       background: var(--primary);
-      color: #090d16;
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
     }
 
     .btn-primary:hover {
-      background: var(--primary-hover);
+      background: #0369a1;
     }
 
     .btn-secondary {
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: var(--btn-sec-bg);
+      color: var(--btn-sec-text);
+      border: 1px solid var(--panel-border);
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.1);
     }
 
-    /* Map Custom Markers */
-    .marker-village {
+    /* Beautiful Map Markers (Apple Maps Pin Aesthetic) */
+    .marker-pin {
+      width: 28px;
+      height: 28px;
+      border-radius: 50% 50% 50% 0;
+      position: absolute;
+      transform: rotate(-45deg);
+      left: 50%;
+      top: 50%;
+      margin: -20px 0 0 -14px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .marker-pin::after {
+      content: '';
+      width: 14px;
+      height: 14px;
+      margin: 7px 0 0 7px;
+      background: #ffffff;
+      position: absolute;
+      border-radius: 50%;
+    }
+
+    .pin-village {
+      background: #0284c7;
+    }
+
+    .marker-village-dot {
       width: 16px;
       height: 16px;
-      background: #38bdf8;
+      background: #0284c7;
       border: 3px solid #ffffff;
       border-radius: 50%;
-      box-shadow: 0 0 12px rgba(56, 189, 248, 0.9);
-      animation: pulse 2s infinite;
+      box-shadow: 0 0 14px rgba(2, 132, 199, 0.85);
+      animation: pulse-ring 2s infinite;
     }
 
-    @keyframes pulse {
-      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7); }
-      70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(56, 189, 248, 0); }
-      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0); }
+    @keyframes pulse-ring {
+      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.6); }
+      70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(2, 132, 199, 0); }
+      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
     }
 
-    .marker-phc {
-      font-size: 22px;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
-    }
-
-    .marker-hw {
-      font-size: 20px;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.6));
+    .marker-symbol {
+      font-size: 24px;
+      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));
+      cursor: pointer;
     }
 
     /* Responsive */
@@ -415,12 +538,24 @@
       .controls-card {
         max-height: 48vh;
       }
+      .style-switcher {
+        top: auto;
+        bottom: 16px;
+        right: 16px;
+      }
     }
   </style>
 </head>
-<body>
+<body class="theme-light">
 
   <div id="map"></div>
+
+  <!-- Style Switcher (3 Layers: Light Default, Dark, Detailed) -->
+  <div class="style-switcher">
+    <button class="style-btn active" id="btnStyleLight">☀️ Light (Apple)</button>
+    <button class="style-btn" id="btnStyleDark">🌙 Dark (Midnight)</button>
+    <button class="style-btn" id="btnStyleVoyager">🗺️ Detailed (Google)</button>
+  </div>
 
   <div class="app-shell">
     <!-- Header -->
@@ -428,10 +563,10 @@
       <div class="brand">
         <span>🇮🇳</span>
         <h1>OpenMapIndia</h1>
-        <span class="brand-tag">Live API</span>
+        <span class="brand-tag">v1.0 API</span>
       </div>
       <p class="header-subtitle">
-        100% GitHub-Native Geocompute, Rural Routing & Infrastructure Intelligence.
+        Apple Maps elegance fused with Google Maps rural routing intelligence.
       </p>
       <div class="national-pills">
         <span class="pill">🏛️ 35 States & UTs</span>
@@ -508,7 +643,7 @@
             <span class="vc-dist vc-dist-emerald" id="vPhcDist">-- km</span>
           </div>
           <div class="vc-bottom">
-            <span class="road-tag" id="vPhcType">PHC / CHC</span>
+            <span class="road-tag" id="vPhcType">Primary Health Centre</span>
             <span class="eta-badge" id="vPhcEta">🚗 Est. -- mins drive</span>
           </div>
         </div>
@@ -517,7 +652,7 @@
         <div class="vector-card vector-hw">
           <div class="vc-top">
             <span class="vc-icon">🛣️</span>
-            <span class="vc-title" id="vHwRef">Nearest Highway</span>
+            <span class="vc-title" id="vHwRef">Nearest Highway Corridor</span>
             <span class="vc-dist vc-dist-amber" id="vHwDist">-- km</span>
           </div>
           <div class="vc-bottom">
@@ -526,7 +661,7 @@
           </div>
         </div>
 
-        <!-- Copy API Snippet -->
+        <!-- Actions -->
         <div class="btn-group">
           <button class="btn btn-primary" id="btnCopyUrl">📋 Copy API URL</button>
           <a class="btn btn-secondary" id="btnViewJson" target="_blank" style="text-decoration: none;">🔍 View JSON</a>
@@ -536,40 +671,62 @@
   </div>
 
   <script>
-    // Initialize MapLibre GL Map
+    // 3 Curated Basemap Styles:
+    // 1. Light (Apple Maps Minimal Pastel Vector Style)
+    // 2. Dark (Midnight Cyberpunk Contrast)
+    // 3. Voyager (Google Maps Functional Vibrant Roads & POIs)
+    const STYLES = {
+      light: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
+      dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      voyager: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json'
+    };
+
+    let currentStyleKey = 'light';
+    let lastRenderedVillage = null;
+    let nationalData = null;
+    let currentDistrictData = null;
+    let markers = [];
+
+    // Initialize MapLibre GL with Apple Maps Positron Vector Style as DEFAULT
     const map = new maplibregl.Map({
       container: 'map',
-      style: {
-        version: 8,
-        sources: {
-          'osm-tiles': {
-            type: 'raster',
-            tiles: [
-              'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-            ],
-            tileSize: 256,
-            attribution: '&copy; OpenStreetMap Contributors'
-          }
-        },
-        layers: [
-          {
-            id: 'osm-layer',
-            type: 'raster',
-            source: 'osm-tiles',
-            minzoom: 0,
-            maxzoom: 19
-          }
-        ]
-      },
+      style: STYLES.light,
       center: [78.9629, 22.5937],
       zoom: 4.8
     });
 
-    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'bottom-right');
 
-    let nationalData = null;
-    let currentDistrictData = null;
-    let markers = [];
+    // Style Switcher Handlers
+    function setMapStyle(styleKey) {
+      if (currentStyleKey === styleKey) return;
+      currentStyleKey = styleKey;
+
+      document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
+      if (styleKey === 'light') {
+        document.getElementById('btnStyleLight').classList.add('active');
+        document.body.className = 'theme-light';
+      } else if (styleKey === 'dark') {
+        document.getElementById('btnStyleDark').classList.add('active');
+        document.body.className = 'theme-dark';
+      } else if (styleKey === 'voyager') {
+        document.getElementById('btnStyleVoyager').classList.add('active');
+        document.body.className = 'theme-light';
+      }
+
+      map.setStyle(STYLES[styleKey]);
+    }
+
+    document.getElementById('btnStyleLight').addEventListener('click', () => setMapStyle('light'));
+    document.getElementById('btnStyleDark').addEventListener('click', () => setMapStyle('dark'));
+    document.getElementById('btnStyleVoyager').addEventListener('click', () => setMapStyle('voyager'));
+
+    // Re-render route layers when style finishes reloading
+    map.on('style.load', () => {
+      if (lastRenderedVillage) {
+        renderVillage(lastRenderedVillage);
+      }
+    });
 
     function clearMarkers() {
       markers.forEach(m => m.remove());
@@ -607,7 +764,7 @@
       return coordinates;
     }
 
-    // Fetch turn-by-turn road curves from OSM routing engine
+    // Fetch physical turn-by-turn road curves from OSM routing engine
     async function fetchRoadCurvedRoute(fromCoords, toCoords) {
       const url = `https://router.project-osrm.org/route/v1/driving/${fromCoords[1]},${fromCoords[0]};${toCoords[1]},${toCoords[0]}?overview=full&geometries=geojson`;
       try {
@@ -622,7 +779,7 @@
           };
         }
       } catch (err) {
-        console.warn('Fallback to precomputed vector:', err);
+        console.warn('Fallback to vector geometry:', err);
       }
       return null;
     }
@@ -657,6 +814,7 @@
       const villageDetail = document.getElementById('villageDetail');
 
       clearMarkers();
+      lastRenderedVillage = null;
       districtSelect.innerHTML = '<option value="">Loading districts...</option>';
       analyticsPanel.style.display = 'none';
       villageGroup.style.display = 'none';
@@ -690,6 +848,7 @@
       const villageSearch = document.getElementById('villageSearch');
 
       clearMarkers();
+      lastRenderedVillage = null;
       villageDetail.style.display = 'none';
       villageSearch.value = '';
 
@@ -715,7 +874,7 @@
 
       if (currentDistrictData.bbox) {
         const [minx, miny, maxx, maxy] = currentDistrictData.bbox;
-        map.fitBounds([[minx, miny], [maxx, maxy]], { padding: 40, maxZoom: 12 });
+        map.fitBounds([[minx, miny], [maxx, maxy]], { padding: 50, maxZoom: 12 });
       }
 
       populateVillageList(currentDistrictData.villages.slice(0, 50));
@@ -757,7 +916,9 @@
     });
 
     async function renderVillage(v) {
+      lastRenderedVillage = v;
       clearMarkers();
+
       const [vLat, vLon] = v.coords;
       const phc = v.precomputed_routing.nearest_health;
       const hw = v.precomputed_routing.nearest_highway;
@@ -789,7 +950,7 @@
 
       // 1. Village Pulsing Marker
       const vEl = document.createElement('div');
-      vEl.className = 'marker-village';
+      vEl.className = 'marker-village-dot';
       const vMarker = new maplibregl.Marker({ element: vEl })
         .setLngLat([vLon, vLat])
         .setPopup(new maplibregl.Popup({ offset: 12 }).setHTML(`<b>🏡 ${v.name}</b><br>Type: ${v.type}`))
@@ -805,7 +966,7 @@
 
       // 2. Hospital Marker
       const phcEl = document.createElement('div');
-      phcEl.className = 'marker-phc';
+      phcEl.className = 'marker-symbol';
       phcEl.textContent = '🏥';
       const phcMarker = new maplibregl.Marker({ element: phcEl })
         .setLngLat(phcEnd)
@@ -815,7 +976,7 @@
 
       // 3. Highway Marker
       const hwEl = document.createElement('div');
-      hwEl.className = 'marker-hw';
+      hwEl.className = 'marker-symbol';
       hwEl.textContent = '🛣️';
       const hwMarker = new maplibregl.Marker({ element: hwEl })
         .setLngLat(hwEnd)
@@ -823,21 +984,21 @@
         .addTo(map);
       markers.push(hwMarker);
 
-      // Initial direct lines
-      drawRouteLayer('phc-route', phcRouteCoords, '#10b981', false);
-      drawRouteLayer('hw-route', hwRouteCoords, '#f59e0b', true);
+      // Draw initial smooth routes with casing for contrast
+      drawRouteWithCasing('phc-route', phcRouteCoords, '#059669', false);
+      drawRouteWithCasing('hw-route', hwRouteCoords, '#d97706', true);
 
-      // Fit bounds
+      // Smooth camera fly-to bounding box
       const bounds = new maplibregl.LngLatBounds();
       bounds.extend([vLon, vLat]);
       bounds.extend(phcEnd);
       bounds.extend(hwEnd);
-      map.fitBounds(bounds, { padding: 90, maxZoom: 15 });
+      map.fitBounds(bounds, { padding: 90, maxZoom: 15, duration: 1000 });
 
-      // 4. Asynchronously fetch the REAL TURN-BY-TURN road curves from OSM
+      // 4. Asynchronously snap to REAL PHYSICAL ROAD CURVES
       fetchRoadCurvedRoute([vLat, vLon], [phcEnd[1], phcEnd[0]]).then(roadRes => {
         if (roadRes && roadRes.coordinates.length > 2) {
-          drawRouteLayer('phc-route', roadRes.coordinates, '#10b981', false);
+          drawRouteWithCasing('phc-route', roadRes.coordinates, '#059669', false);
           document.getElementById('vPhcEta').textContent = `🚗 Est. ${roadRes.durationMins} mins drive`;
           document.getElementById('vPhcDist').textContent = `${(roadRes.distanceM / 1000).toFixed(1)} km`;
         }
@@ -845,15 +1006,18 @@
 
       fetchRoadCurvedRoute([vLat, vLon], [hwEnd[1], hwEnd[0]]).then(roadRes => {
         if (roadRes && roadRes.coordinates.length > 2) {
-          drawRouteLayer('hw-route', roadRes.coordinates, '#f59e0b', true);
+          drawRouteWithCasing('hw-route', roadRes.coordinates, '#d97706', true);
           document.getElementById('vHwEta').textContent = `🚗 Est. ${roadRes.durationMins} mins drive`;
           document.getElementById('vHwDist').textContent = `${(roadRes.distanceM / 1000).toFixed(1)} km`;
         }
       });
     }
 
-    function drawRouteLayer(id, coords, color, dashed = false) {
+    function drawRouteWithCasing(id, coords, color, dashed = false) {
+      const casingId = `${id}-casing`;
+
       if (map.getLayer(id)) map.removeLayer(id);
+      if (map.getLayer(casingId)) map.removeLayer(casingId);
       if (map.getSource(id)) map.removeSource(id);
 
       map.addSource(id, {
@@ -864,10 +1028,24 @@
         }
       });
 
+      // White or Dark Casing for pop and contrast
+      map.addLayer({
+        id: casingId,
+        type: 'line',
+        source: id,
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': currentStyleKey === 'dark' ? '#020617' : '#ffffff',
+          'line-width': dashed ? 6 : 7,
+          'line-opacity': 0.8
+        }
+      });
+
+      // Main Route Line
       const paint = {
         'line-color': color,
-        'line-width': dashed ? 4 : 4.5,
-        'line-opacity': 0.9
+        'line-width': dashed ? 4 : 5,
+        'line-opacity': 0.95
       };
       if (dashed) {
         paint['line-dasharray'] = [2, 1];
@@ -877,10 +1055,7 @@
         id: id,
         type: 'line',
         source: id,
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round'
-        },
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: paint
       });
     }

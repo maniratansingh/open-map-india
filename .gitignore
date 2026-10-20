@@ -3,12 +3,19 @@
 venv/
 ENV/
 
-# Large raw OSM and intermediate files
+# Large raw OSM and intermediate files (Never commit to Git)
 india_tiles/
 data/
 *.osm.pbf
 *.mbtiles
 *.tar.gz
+*.jsonl.gz
+
+# VPS Heavy Edition Data & Cache (Never commit to Git)
+vps_heavy_edition/data/
+vps_heavy_edition/*.pbf
+vps_heavy_edition/full_routes/
+vps_heavy_edition/osrm_cache/
 
 # Python caches
 __pycache__/

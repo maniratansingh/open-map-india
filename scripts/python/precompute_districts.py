@@ -18,6 +18,9 @@ from scipy.spatial import cKDTree
 from shapely.geometry import shape, Point
 from shapely import STRtree, points
 
+REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+os.chdir(REPO_ROOT)
+
 DISTRICTS_GEOJSON = "data/raw/india_district.geojson"
 VILLAGES_GZ = "data/extracted/villages.jsonl.gz"
 HEALTH_GZ = "data/extracted/health.jsonl.gz"

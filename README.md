@@ -120,7 +120,7 @@ print("Nearest Hospital:", res["village"]["precomputed_routing"]["nearest_health
 Whenever OpenStreetMap releases new roads, or new hospitals/bypasses are added to India:
 
 ```bash
-./update_dataset.sh
+./scripts/bash/update_dataset.sh
 ```
 
 This single command:
@@ -128,6 +128,37 @@ This single command:
 2. Extracts updated settlements, hospitals, and highways.
 3. Recomputes all 594 district packages and infrastructure analytics.
 4. Updates state and national indexes.
+
+---
+
+## 📁 Repository Architecture & Folder Structure
+
+```
+open-map-india/
+├── index.html                  <-- Live WebGL Engine (Served directly by GitHub Pages)
+├── README.md                   <-- Main Project Documentation & Architecture
+├── INDIA_DIRECTORY.md          <-- Whole India Master Directory (All 594 Districts A-Z + Rankings)
+├── DISTRICT_DIRECTORY.md       <-- State-wise Grouped District Directory
+├── API_REFERENCE.md            <-- REST API Schema Specification
+├── api/                        <-- Static Precomputed API Datasets (Served via jsDelivr CDN)
+│   └── v1/
+│       ├── india.json          <-- 35 States & UTs National Summary
+│       ├── search_index.json   <-- 594 District Centroids & Search Index
+│       ├── states/             <-- 35 State Dossiers
+│       └── districts/          <-- 594 District Packages (374k Villages & PHC Vectors)
+├── sdk/                        <-- Zero-Dependency Developer SDKs
+│   ├── js/                     <-- JavaScript / TypeScript SDK
+│   └── python/                 <-- Python SDK
+└── scripts/                    <-- Automation, Ingestion & Batch Computing
+    ├── python/                 <-- Python extraction & precomputation engines
+    │   ├── extract_all.py
+    │   ├── extract_highways.py
+    │   ├── precompute_districts.py
+    │   └── build_indexes.py
+    └── bash/                   <-- Shell execution & pipeline scripts
+        ├── run_pipeline.sh
+        └── update_dataset.sh
+```
 
 ---
 

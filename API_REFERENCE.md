@@ -3,15 +3,19 @@
 OpenMapIndia is a **100% static, hyperlinked JSON API** hosted directly on GitHub and served via the jsDelivr global CDN with zero rate-limit blocks and zero token authentication.
 
 ```
-CDN Base URL: https://cdn.jsdelivr.net/gh/<owner>/<repo>@main/api/v1
+CDN Base URL: https://cdn.jsdelivr.net/gh/maniratansingh/open-map-india@main/api/v1
 Localhost URL: http://localhost:8000/api/v1
 ```
+
+> 💡 **Developer Integration Options**:
+> * **Way A (Zero Download)**: Fetch any district via free CDN on-demand (`https://cdn.jsdelivr.net/gh/maniratansingh/open-map-india@main/api/v1/districts/<state>/<district>.json`).
+> * **Way B (Offline Database)**: Run `git clone https://github.com/maniratansingh/open-map-india.git` (~22 MB) to get all 594 districts and 373,988 villages locally inside `api/v1/districts/`.
 
 ---
 
 ## 1. National Root Endpoint
 
-* **URL**: `https://cdn.jsdelivr.net/gh/<owner>/<repo>@main/api/v1/india.json`
+* **URL**: `https://cdn.jsdelivr.net/gh/maniratansingh/open-map-india@main/api/v1/india.json`
 * **Localhost**: `http://localhost:8000/api/v1/india.json`
 * **Method**: `GET`
 * **Description**: Returns all 35 States & Union Territories, total settlement counts, and national infrastructure accessibility metrics.
@@ -102,7 +106,7 @@ To get all districts in a state, append `/states/<state_slug>.json`:
 
 Each district endpoint delivers all villages, coordinates, nearest PHC/hospital, nearest highway junction, and district infrastructure analytics:
 
-* **Endpoint Pattern**: `https://cdn.jsdelivr.net/gh/<owner>/<repo>@main/api/v1/districts/<state_slug>/<district_slug>.json`
+* **Endpoint Pattern**: `https://cdn.jsdelivr.net/gh/maniratansingh/open-map-india@main/api/v1/districts/<state_slug>/<district_slug>.json`
 * **Localhost Pattern**: `http://localhost:8000/api/v1/districts/<state_slug>/<district_slug>.json`
 
 ### Sample District Endpoints:

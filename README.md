@@ -59,6 +59,35 @@ OpenMapIndia is strictly designed to be **100% self-contained on GitHub Pages** 
 
 ## ⚡ Quickstart for Developers
 
+### 💻 How to Use the Whole India Dataset in Your App
+
+If you want the **entire country's data** (all 35 States, 594 Districts, and 373,988 Villages) inside your own website, mobile app (React / Flutter / iOS / Android), or Python backend, two ready-to-use options are available:
+
+#### 🌐 Way A: Using Free Global CDN (No download needed, 2 lines of code)
+You don't even need to download this repository. You can fetch data for any of India's 594 districts on the fly via free CDN:
+
+```javascript
+// Example: Get any district in India instantly
+const state = "uttar_pradesh";
+const district = "basti";
+
+fetch(`https://cdn.jsdelivr.net/gh/maniratansingh/open-map-india@main/api/v1/districts/${state}/${district}.json`)
+  .then(res => res.json())
+  .then(data => console.log(data));
+```
+
+#### 💻 Way B: Downloading the Entire Whole-India Database to Your Computer
+If you want all 594 districts stored locally on your computer or server for 100% offline access:
+
+```bash
+# Clone the repository (Takes ~5 seconds, only ~22 MB compressed):
+git clone https://github.com/maniratansingh/open-map-india.git
+cd open-map-india
+```
+You now have all **373,988 villages** and all **594 districts** sitting locally inside [`api/v1/districts/`](api/v1/districts/).
+
+---
+
 ### 1. JavaScript / TypeScript (Browser, Node, React, React Native)
 
 ```javascript

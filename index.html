@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OpenMapIndia — Apple & Google Hybrid National Geocompute Engine</title>
+  <title>OpenMapIndia — Vibrant National Geocompute & Routing Intelligence</title>
   
   <!-- MapLibre GL CSS & JS -->
   <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet" />
@@ -11,52 +11,55 @@
 
   <style>
     :root {
-      --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
-      --primary: #0284c7;
-      --primary-glow: rgba(2, 132, 199, 0.35);
-      --emerald: #059669;
-      --amber: #d97706;
-      --rose: #e11d48;
+      --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      --saffron: #ff6b00;
+      --emerald: #00c853;
+      --emerald-glow: rgba(0, 200, 83, 0.4);
+      --cyan: #00b4d8;
+      --cyan-glow: rgba(0, 180, 216, 0.4);
+      --amber: #ff9100;
+      --amber-glow: rgba(255, 145, 0, 0.4);
+      --indigo: #4f46e5;
     }
 
-    /* Light Theme (Default - Apple Maps Vibe) */
+    /* Vibrant Light Theme (Default - Rich, Colorful, High Pop) */
     body.theme-light {
-      --bg-panel: rgba(255, 255, 255, 0.88);
-      --panel-border: rgba(0, 0, 0, 0.08);
-      --panel-shadow: 0 16px 36px -10px rgba(0, 0, 0, 0.15), 0 0 1px rgba(0, 0, 0, 0.1);
+      --bg-panel: rgba(255, 255, 255, 0.92);
+      --panel-border: rgba(255, 255, 255, 0.8);
+      --panel-shadow: 0 20px 45px -10px rgba(15, 23, 42, 0.22), 0 0 1px rgba(0, 0, 0, 0.15);
       --text-title: #0f172a;
-      --text-sub: #475569;
+      --text-sub: #334155;
       --text-muted: #64748b;
-      --input-bg: rgba(241, 245, 249, 0.9);
-      --input-border: rgba(203, 213, 225, 0.8);
-      --card-inner: rgba(248, 250, 252, 0.95);
-      --card-border-inner: rgba(226, 232, 240, 0.8);
-      --pill-bg: rgba(0, 0, 0, 0.04);
-      --pill-border: rgba(0, 0, 0, 0.08);
-      --pill-text: #334155;
-      --btn-sec-bg: rgba(0, 0, 0, 0.05);
+      --input-bg: #ffffff;
+      --input-border: #cbd5e1;
+      --card-inner: #ffffff;
+      --card-border-inner: #e2e8f0;
+      --pill-bg: #f1f5f9;
+      --pill-border: #e2e8f0;
+      --pill-text: #1e293b;
+      --btn-sec-bg: #f8fafc;
       --btn-sec-text: #0f172a;
       --route-casing: #ffffff;
     }
 
-    /* Dark Theme (Midnight Cyberpunk Vibe) */
+    /* Vibrant Dark Theme (Cyberpunk Midnight Neon) */
     body.theme-dark {
-      --bg-panel: rgba(15, 23, 42, 0.88);
-      --panel-border: rgba(255, 255, 255, 0.12);
-      --panel-shadow: 0 20px 45px -12px rgba(0, 0, 0, 0.7);
-      --text-title: #f8fafc;
+      --bg-panel: rgba(11, 15, 25, 0.92);
+      --panel-border: rgba(255, 255, 255, 0.14);
+      --panel-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85);
+      --text-title: #ffffff;
       --text-sub: #cbd5e1;
       --text-muted: #94a3b8;
-      --input-bg: rgba(2, 6, 23, 0.7);
-      --input-border: rgba(255, 255, 255, 0.15);
-      --card-inner: rgba(30, 41, 59, 0.6);
-      --card-border-inner: rgba(255, 255, 255, 0.08);
-      --pill-bg: rgba(255, 255, 255, 0.06);
-      --pill-border: rgba(255, 255, 255, 0.1);
-      --pill-text: #cbd5e1;
+      --input-bg: rgba(17, 24, 39, 0.9);
+      --input-border: rgba(255, 255, 255, 0.18);
+      --card-inner: rgba(17, 24, 39, 0.75);
+      --card-border-inner: rgba(255, 255, 255, 0.1);
+      --pill-bg: rgba(255, 255, 255, 0.08);
+      --pill-border: rgba(255, 255, 255, 0.12);
+      --pill-text: #e2e8f0;
       --btn-sec-bg: rgba(255, 255, 255, 0.1);
-      --btn-sec-text: #f8fafc;
-      --route-casing: #090d16;
+      --btn-sec-text: #ffffff;
+      --route-casing: #050811;
     }
 
     * {
@@ -71,6 +74,7 @@
       overflow: hidden;
       height: 100vh;
       width: 100vw;
+      background: #0b0f19;
       transition: background-color 0.3s ease;
     }
 
@@ -85,16 +89,16 @@
     /* Style Switcher Pill Toolbar (Top Right) */
     .style-switcher {
       position: absolute;
-      top: 16px;
-      right: 16px;
+      top: 18px;
+      right: 18px;
       z-index: 20;
       display: flex;
       background: var(--bg-panel);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
       border: 1px solid var(--panel-border);
       padding: 4px;
-      border-radius: 30px;
+      border-radius: 40px;
       box-shadow: var(--panel-shadow);
       gap: 3px;
     }
@@ -103,15 +107,15 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 6px 14px;
-      border-radius: 20px;
+      padding: 7px 15px;
+      border-radius: 24px;
       border: none;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-muted);
       background: transparent;
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .style-btn:hover {
@@ -119,25 +123,19 @@
     }
 
     .style-btn.active {
-      background: #ffffff;
-      color: #0f172a;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    }
-
-    body.theme-dark .style-btn.active {
-      background: #38bdf8;
-      color: #090d16;
-      box-shadow: 0 2px 10px rgba(56, 189, 248, 0.35);
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+      color: #ffffff !important;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
     }
 
     /* Floating UI Container */
     .app-shell {
       position: absolute;
-      top: 16px;
-      left: 16px;
-      bottom: 16px;
+      top: 18px;
+      left: 18px;
+      bottom: 18px;
       width: 450px;
-      max-width: calc(100vw - 32px);
+      max-width: calc(100vw - 36px);
       z-index: 10;
       display: flex;
       flex-direction: column;
@@ -147,10 +145,10 @@
 
     .glass-card {
       background: var(--bg-panel);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
       border: 1px solid var(--panel-border);
-      border-radius: 20px;
+      border-radius: 22px;
       box-shadow: var(--panel-shadow);
       pointer-events: auto;
       overflow: hidden;
@@ -160,38 +158,50 @@
     /* Header */
     .header-card {
       padding: 18px 22px;
+      position: relative;
+    }
+
+    .header-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #ff6b00 0%, #ffffff 50%, #00c853 100%);
     }
 
     .brand {
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 4px;
+      margin-bottom: 5px;
     }
 
     .brand h1 {
-      font-size: 21px;
+      font-size: 22px;
       font-weight: 800;
       letter-spacing: -0.6px;
-      color: var(--text-title);
+      background: linear-gradient(135deg, #ff6b00 0%, #0284c7 50%, #00c853 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .brand-tag {
       font-size: 10px;
-      font-weight: 700;
-      background: rgba(2, 132, 199, 0.12);
+      font-weight: 800;
+      background: linear-gradient(135deg, rgba(255, 107, 0, 0.15), rgba(2, 132, 199, 0.15));
       color: #0284c7;
       padding: 3px 8px;
       border-radius: 12px;
-      border: 1px solid rgba(2, 132, 199, 0.25);
+      border: 1px solid rgba(2, 132, 199, 0.3);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.6px;
     }
 
     body.theme-dark .brand-tag {
-      background: rgba(56, 189, 248, 0.15);
       color: #38bdf8;
-      border-color: rgba(56, 189, 248, 0.3);
+      border-color: rgba(56, 189, 248, 0.4);
     }
 
     .header-subtitle {
@@ -214,7 +224,7 @@
       background: var(--pill-bg);
       color: var(--pill-text);
       border: 1px solid var(--pill-border);
-      font-weight: 600;
+      font-weight: 700;
     }
 
     /* Scrollable Controls & Results */
@@ -224,7 +234,7 @@
       flex-direction: column;
       gap: 14px;
       overflow-y: auto;
-      max-height: calc(100vh - 190px);
+      max-height: calc(100vh - 200px);
     }
 
     .field-group {
@@ -235,38 +245,40 @@
 
     label {
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 800;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
+      letter-spacing: 0.7px;
       color: var(--text-muted);
     }
 
     select, input {
       width: 100%;
       background: var(--input-bg);
-      border: 1px solid var(--input-border);
+      border: 1.5px solid var(--input-border);
       color: var(--text-title);
-      padding: 10px 14px;
+      padding: 11px 14px;
       border-radius: 12px;
       font-size: 13.5px;
+      font-weight: 600;
       outline: none;
-      transition: all 0.2s;
+      transition: all 0.25s;
     }
 
     select:focus, input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px var(--primary-glow);
+      border-color: #0284c7;
+      box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.25);
     }
 
     /* Analytics Panel */
     .analytics-panel {
       background: var(--card-inner);
-      border: 1px solid var(--card-border-inner);
-      border-radius: 14px;
-      padding: 12px 14px;
+      border: 1.5px solid var(--card-border-inner);
+      border-radius: 16px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
     }
 
     .analytics-header {
@@ -276,60 +288,65 @@
     }
 
     .analytics-title {
-      font-size: 12.5px;
-      font-weight: 700;
+      font-size: 13px;
+      font-weight: 800;
       color: var(--text-title);
     }
 
     .score-badge {
-      font-size: 11.5px;
+      font-size: 12px;
       font-weight: 800;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: rgba(16, 185, 129, 0.15);
-      color: var(--emerald);
-      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 4px 10px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, rgba(0, 200, 83, 0.15), rgba(0, 200, 83, 0.25));
+      color: #00a844;
+      border: 1px solid rgba(0, 200, 83, 0.4);
+    }
+
+    body.theme-dark .score-badge {
+      color: #00e676;
     }
 
     .stats-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px;
+      gap: 8px;
     }
 
     .stat-box {
-      background: rgba(0, 0, 0, 0.02);
-      padding: 8px 10px;
-      border-radius: 8px;
+      background: rgba(2, 132, 199, 0.03);
+      padding: 10px 12px;
+      border-radius: 10px;
       border: 1px solid var(--card-border-inner);
     }
 
     body.theme-dark .stat-box {
-      background: rgba(255, 255, 255, 0.03);
+      background: rgba(255, 255, 255, 0.04);
     }
 
     .stat-box-val {
-      font-size: 14.5px;
+      font-size: 16px;
       font-weight: 800;
       color: var(--text-title);
     }
 
     .stat-box-lbl {
-      font-size: 10.5px;
+      font-size: 11px;
+      font-weight: 600;
       color: var(--text-muted);
-      margin-top: 1px;
+      margin-top: 2px;
     }
 
     /* Village Result Card */
     .village-detail {
       background: var(--card-inner);
-      border: 1.5px solid rgba(2, 132, 199, 0.35);
+      border: 2px solid #0284c7;
       border-radius: 16px;
-      padding: 14px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 8px 24px -6px rgba(2, 132, 199, 0.12);
+      gap: 12px;
+      box-shadow: 0 10px 25px -5px rgba(2, 132, 199, 0.25);
     }
 
     .v-header {
@@ -339,88 +356,86 @@
     }
 
     .v-name {
-      font-size: 16.5px;
+      font-size: 18px;
       font-weight: 800;
       color: var(--text-title);
     }
 
     .v-type {
-      font-size: 10px;
-      font-weight: 700;
+      font-size: 10.5px;
+      font-weight: 800;
       text-transform: uppercase;
-      padding: 2px 7px;
+      padding: 3px 8px;
       border-radius: 6px;
-      background: rgba(0, 0, 0, 0.06);
-      color: var(--text-muted);
+      background: rgba(2, 132, 199, 0.12);
+      color: #0284c7;
+      border: 1px solid rgba(2, 132, 199, 0.25);
     }
 
-    body.theme-dark .v-type {
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* Vector Cards */
+    /* Vector Cards (High Voltage Eye-Popping Aesthetic) */
     .vector-card {
-      border-radius: 12px;
-      padding: 10px 12px;
+      border-radius: 14px;
+      padding: 12px 14px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
 
     .vector-phc {
-      background: rgba(5, 150, 105, 0.07);
-      border: 1px solid rgba(5, 150, 105, 0.25);
+      background: linear-gradient(135deg, rgba(0, 200, 83, 0.08) 0%, rgba(0, 200, 83, 0.16) 100%);
+      border: 1.5px solid rgba(0, 200, 83, 0.4);
     }
 
     .vector-hw {
-      background: rgba(217, 119, 6, 0.07);
-      border: 1px solid rgba(217, 119, 6, 0.25);
+      background: linear-gradient(135deg, rgba(255, 107, 0, 0.08) 0%, rgba(255, 107, 0, 0.16) 100%);
+      border: 1.5px solid rgba(255, 107, 0, 0.4);
     }
 
     .vc-top {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .vc-icon {
-      font-size: 18px;
+      font-size: 22px;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
     }
 
     .vc-title {
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 13.5px;
+      font-weight: 800;
       color: var(--text-title);
       flex: 1;
     }
 
     .vc-dist {
-      font-size: 14px;
-      font-weight: 800;
+      font-size: 15px;
+      font-weight: 900;
     }
 
-    .vc-dist-emerald { color: #059669; }
-    .vc-dist-amber { color: #d97706; }
-    body.theme-dark .vc-dist-emerald { color: #10b981; }
-    body.theme-dark .vc-dist-amber { color: #f59e0b; }
+    .vc-dist-emerald { color: #00a844; }
+    .vc-dist-amber { color: #ff6b00; }
+    body.theme-dark .vc-dist-emerald { color: #00e676; }
+    body.theme-dark .vc-dist-amber { color: #ff9100; }
 
     .vc-bottom {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 11px;
+      font-size: 11.5px;
       color: var(--text-muted);
-      border-top: 1px solid rgba(0, 0, 0, 0.04);
-      padding-top: 5px;
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
+      padding-top: 6px;
     }
 
     body.theme-dark .vc-bottom {
-      border-top-color: rgba(255, 255, 255, 0.06);
+      border-top-color: rgba(255, 255, 255, 0.08);
     }
 
     .road-tag {
-      font-size: 10.5px;
-      font-weight: 700;
+      font-size: 11px;
+      font-weight: 800;
       color: var(--text-sub);
     }
 
@@ -428,7 +443,7 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text-title);
     }
 
@@ -441,13 +456,13 @@
 
     .btn {
       flex: 1;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-size: 12px;
-      font-weight: 700;
+      padding: 11px 14px;
+      border-radius: 12px;
+      font-size: 12.5px;
+      font-weight: 800;
       cursor: pointer;
       border: none;
-      transition: all 0.2s;
+      transition: all 0.25s;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -455,75 +470,71 @@
     }
 
     .btn-primary {
-      background: var(--primary);
+      background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
       color: #ffffff;
-      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
     }
 
     .btn-primary:hover {
-      background: #0369a1;
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.5);
+      transform: translateY(-1px);
     }
 
     .btn-secondary {
       background: var(--btn-sec-bg);
       color: var(--btn-sec-text);
-      border: 1px solid var(--panel-border);
+      border: 1.5px solid var(--panel-border);
     }
 
     .btn-secondary:hover {
-      background: rgba(0, 0, 0, 0.1);
+      background: rgba(0, 0, 0, 0.08);
     }
 
-    /* Beautiful Map Markers (Apple Maps Pin Aesthetic) */
-    .marker-pin {
-      width: 28px;
-      height: 28px;
-      border-radius: 50% 50% 50% 0;
-      position: absolute;
-      transform: rotate(-45deg);
-      left: 50%;
-      top: 50%;
-      margin: -20px 0 0 -14px;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+    /* High-Voltage Animated Radar Pin for Village */
+    .beacon-wrapper {
+      position: relative;
+      width: 24px;
+      height: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .marker-pin::after {
-      content: '';
+    .beacon-core {
       width: 14px;
       height: 14px;
-      margin: 7px 0 0 7px;
-      background: #ffffff;
-      position: absolute;
-      border-radius: 50%;
-    }
-
-    .pin-village {
-      background: #0284c7;
-    }
-
-    .marker-village-dot {
-      width: 16px;
-      height: 16px;
       background: #0284c7;
       border: 3px solid #ffffff;
       border-radius: 50%;
-      box-shadow: 0 0 14px rgba(2, 132, 199, 0.85);
-      animation: pulse-ring 2s infinite;
+      box-shadow: 0 0 16px #0284c7, 0 0 30px rgba(2, 132, 199, 0.8);
+      z-index: 2;
     }
 
-    @keyframes pulse-ring {
-      0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.6); }
-      70% { transform: scale(1.15); box-shadow: 0 0 0 10px rgba(2, 132, 199, 0); }
-      100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+    .beacon-wave {
+      position: absolute;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(2, 132, 199, 0.4);
+      animation: beacon-pulse 1.8s ease-out infinite;
+      z-index: 1;
     }
 
-    .marker-symbol {
-      font-size: 24px;
-      filter: drop-shadow(0 3px 6px rgba(0,0,0,0.4));
+    @keyframes beacon-pulse {
+      0% { transform: scale(0.3); opacity: 1; }
+      100% { transform: scale(1.6); opacity: 0; }
+    }
+
+    /* 3D Glossy Symbols */
+    .marker-3d-symbol {
+      font-size: 28px;
+      filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.4));
       cursor: pointer;
+      transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .marker-3d-symbol:hover {
+      transform: scale(1.25) translateY(-4px);
     }
 
     /* Responsive */
@@ -550,12 +561,12 @@
 
   <div id="map"></div>
 
-  <!-- Style Switcher (4 Layers: Light Default, Dark, Detailed, Classic OSM) -->
+  <!-- Style Switcher (Vibrant Colored Default, Midnight Dark, Apple Minimal, Classic OSM) -->
   <div class="style-switcher">
-    <button class="style-btn active" id="btnStyleLight">☀️ Light (Apple)</button>
-    <button class="style-btn" id="btnStyleDark">🌙 Dark (Midnight)</button>
-    <button class="style-btn" id="btnStyleVoyager">🗺️ Detailed (Google)</button>
-    <button class="style-btn" id="btnStyleOsm">🌍 OSM (Classic)</button>
+    <button class="style-btn active" id="btnStyleVoyager">🎨 Vibrant (Google/Apple)</button>
+    <button class="style-btn" id="btnStyleDark">🌙 Dark (Midnight Neon)</button>
+    <button class="style-btn" id="btnStyleLight">☀️ Apple (Minimal)</button>
+    <button class="style-btn" id="btnStyleOsm">🌍 Classic OSM</button>
   </div>
 
   <div class="app-shell">
@@ -567,7 +578,7 @@
         <span class="brand-tag">v1.0 API</span>
       </div>
       <p class="header-subtitle">
-        Apple Maps elegance fused with Google Maps rural routing intelligence.
+        National Geocompute & Precomputed Rural Routing with Real Physical Road Curvatures.
       </p>
       <div class="national-pills">
         <span class="pill">🏛️ 35 States & UTs</span>
@@ -672,15 +683,12 @@
   </div>
 
   <script>
-    // 4 Curated Basemap Styles:
-    // 1. Light (Apple Maps Minimal Pastel Vector Style)
-    // 2. Dark (Midnight Cyberpunk Contrast)
-    // 3. Voyager (Google Maps Functional Vibrant Roads & POIs)
-    // 4. OSM (Classic OpenStreetMap Standard Raster)
+    // 4 High-Pop Curated Basemap Styles:
+    // Default is Voyager (Rich Google/Apple colored roads, parks, rivers)
     const STYLES = {
-      light: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
-      dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
       voyager: 'https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json',
+      dark: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      light: 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
       osm: {
         version: 8,
         sources: {
@@ -704,16 +712,16 @@
       }
     };
 
-    let currentStyleKey = 'light';
+    let currentStyleKey = 'voyager';
     let lastRenderedVillage = null;
     let nationalData = null;
     let currentDistrictData = null;
     let markers = [];
 
-    // Initialize MapLibre GL with Apple Maps Positron Vector Style as DEFAULT
+    // Initialize MapLibre GL with Vibrant Colored Vector Style as DEFAULT
     const map = new maplibregl.Map({
       container: 'map',
-      style: STYLES.light,
+      style: STYLES.voyager,
       center: [78.9629, 22.5937],
       zoom: 4.8
     });
@@ -726,14 +734,14 @@
       currentStyleKey = styleKey;
 
       document.querySelectorAll('.style-btn').forEach(b => b.classList.remove('active'));
-      if (styleKey === 'light') {
-        document.getElementById('btnStyleLight').classList.add('active');
+      if (styleKey === 'voyager') {
+        document.getElementById('btnStyleVoyager').classList.add('active');
         document.body.className = 'theme-light';
       } else if (styleKey === 'dark') {
         document.getElementById('btnStyleDark').classList.add('active');
         document.body.className = 'theme-dark';
-      } else if (styleKey === 'voyager') {
-        document.getElementById('btnStyleVoyager').classList.add('active');
+      } else if (styleKey === 'light') {
+        document.getElementById('btnStyleLight').classList.add('active');
         document.body.className = 'theme-light';
       } else if (styleKey === 'osm') {
         document.getElementById('btnStyleOsm').classList.add('active');
@@ -743,9 +751,9 @@
       map.setStyle(STYLES[styleKey]);
     }
 
-    document.getElementById('btnStyleLight').addEventListener('click', () => setMapStyle('light'));
-    document.getElementById('btnStyleDark').addEventListener('click', () => setMapStyle('dark'));
     document.getElementById('btnStyleVoyager').addEventListener('click', () => setMapStyle('voyager'));
+    document.getElementById('btnStyleDark').addEventListener('click', () => setMapStyle('dark'));
+    document.getElementById('btnStyleLight').addEventListener('click', () => setMapStyle('light'));
     document.getElementById('btnStyleOsm').addEventListener('click', () => setMapStyle('osm'));
 
     // Re-render route layers when style finishes reloading
@@ -758,7 +766,7 @@
     function clearMarkers() {
       markers.forEach(m => m.remove());
       markers = [];
-      ['phc-route', 'phc-route-casing', 'hw-route', 'hw-route-casing'].forEach(id => {
+      ['phc-route', 'phc-route-glow', 'phc-route-casing', 'hw-route', 'hw-route-glow', 'hw-route-casing'].forEach(id => {
         if (map.getLayer(id)) map.removeLayer(id);
         if (map.getSource(id)) map.removeSource(id);
       });
@@ -975,9 +983,10 @@
         alert('API URL copied to clipboard!');
       };
 
-      // 1. Village Pulsing Marker
+      // 1. Village Pulsing Radar Beacon Marker
       const vEl = document.createElement('div');
-      vEl.className = 'marker-village-dot';
+      vEl.className = 'beacon-wrapper';
+      vEl.innerHTML = '<div class="beacon-wave"></div><div class="beacon-core"></div>';
       const vMarker = new maplibregl.Marker({ element: vEl })
         .setLngLat([vLon, vLat])
         .setPopup(new maplibregl.Popup({ offset: 12 }).setHTML(`<b>🏡 ${v.name}</b><br>Type: ${v.type}`))
@@ -991,19 +1000,19 @@
       const phcEnd = phcRouteCoords[phcRouteCoords.length - 1];
       const hwEnd = hwRouteCoords[hwRouteCoords.length - 1];
 
-      // 2. Hospital Marker
+      // 2. Hospital 3D Marker
       const phcEl = document.createElement('div');
-      phcEl.className = 'marker-symbol';
+      phcEl.className = 'marker-3d-symbol';
       phcEl.textContent = '🏥';
       const phcMarker = new maplibregl.Marker({ element: phcEl })
         .setLngLat(phcEnd)
-        .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML(`<b>🏥 ${phc.name}</b><br>Distance: ${phc.distance_m}m`))
+        .setPopup(new maplibregl.Popup({ offset: 15 }).setHTML(`<b>🏥 ${phc.name}</b><br>Road Distance: ${phc.distance_m}m`))
         .addTo(map);
       markers.push(phcMarker);
 
-      // 3. Highway Marker
+      // 3. Highway 3D Marker
       const hwEl = document.createElement('div');
-      hwEl.className = 'marker-symbol';
+      hwEl.className = 'marker-3d-symbol';
       hwEl.textContent = '🛣️';
       const hwMarker = new maplibregl.Marker({ element: hwEl })
         .setLngLat(hwEnd)
@@ -1011,9 +1020,9 @@
         .addTo(map);
       markers.push(hwMarker);
 
-      // Draw initial smooth routes with casing for contrast
-      drawRouteWithCasing('phc-route', phcRouteCoords, '#059669', false);
-      drawRouteWithCasing('hw-route', hwRouteCoords, '#d97706', true);
+      // Render Multi-Layer Eye-Popping Route Lines
+      drawNeonRoute('phc-route', phcRouteCoords, '#00c853', 'rgba(0, 200, 83, 0.45)', false);
+      drawNeonRoute('hw-route', hwRouteCoords, '#ff6b00', 'rgba(255, 107, 0, 0.45)', true);
 
       // Smooth camera fly-to bounding box
       const bounds = new maplibregl.LngLatBounds();
@@ -1025,7 +1034,7 @@
       // 4. Asynchronously snap to REAL PHYSICAL ROAD CURVES
       fetchRoadCurvedRoute([vLat, vLon], [phcEnd[1], phcEnd[0]]).then(roadRes => {
         if (roadRes && roadRes.coordinates.length > 2) {
-          drawRouteWithCasing('phc-route', roadRes.coordinates, '#059669', false);
+          drawNeonRoute('phc-route', roadRes.coordinates, '#00c853', 'rgba(0, 200, 83, 0.45)', false);
           document.getElementById('vPhcEta').textContent = `🚗 Est. ${roadRes.durationMins} mins drive`;
           document.getElementById('vPhcDist').textContent = `${(roadRes.distanceM / 1000).toFixed(1)} km`;
         }
@@ -1033,18 +1042,21 @@
 
       fetchRoadCurvedRoute([vLat, vLon], [hwEnd[1], hwEnd[0]]).then(roadRes => {
         if (roadRes && roadRes.coordinates.length > 2) {
-          drawRouteWithCasing('hw-route', roadRes.coordinates, '#d97706', true);
+          drawNeonRoute('hw-route', roadRes.coordinates, '#ff6b00', 'rgba(255, 107, 0, 0.45)', true);
           document.getElementById('vHwEta').textContent = `🚗 Est. ${roadRes.durationMins} mins drive`;
           document.getElementById('vHwDist').textContent = `${(roadRes.distanceM / 1000).toFixed(1)} km`;
         }
       });
     }
 
-    function drawRouteWithCasing(id, coords, color, dashed = false) {
+    // 3-Layer Neon High-Voltage Route Drawer
+    function drawNeonRoute(id, coords, coreColor, glowColor, dashed = false) {
+      const glowId = `${id}-glow`;
       const casingId = `${id}-casing`;
 
       if (map.getLayer(id)) map.removeLayer(id);
       if (map.getLayer(casingId)) map.removeLayer(casingId);
+      if (map.getLayer(glowId)) map.removeLayer(glowId);
       if (map.getSource(id)) map.removeSource(id);
 
       map.addSource(id, {
@@ -1055,27 +1067,41 @@
         }
       });
 
-      // White or Dark Casing for pop and contrast
+      // Layer 1: Outer Neon Halo Glow
+      map.addLayer({
+        id: glowId,
+        type: 'line',
+        source: id,
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': glowColor,
+          'line-width': dashed ? 10 : 12,
+          'line-blur': 4,
+          'line-opacity': 0.75
+        }
+      });
+
+      // Layer 2: Contrast Casing
       map.addLayer({
         id: casingId,
         type: 'line',
         source: id,
         layout: { 'line-join': 'round', 'line-cap': 'round' },
         paint: {
-          'line-color': currentStyleKey === 'dark' ? '#020617' : '#ffffff',
+          'line-color': currentStyleKey === 'dark' ? '#0b0f19' : '#ffffff',
           'line-width': dashed ? 6 : 7,
-          'line-opacity': 0.8
+          'line-opacity': 0.85
         }
       });
 
-      // Main Route Line
-      const paint = {
-        'line-color': color,
-        'line-width': dashed ? 4 : 5,
-        'line-opacity': 0.95
+      // Layer 3: Vibrant Core Line
+      const corePaint = {
+        'line-color': coreColor,
+        'line-width': dashed ? 4 : 4.5,
+        'line-opacity': 1.0
       };
       if (dashed) {
-        paint['line-dasharray'] = [2, 1];
+        corePaint['line-dasharray'] = [2, 1];
       }
 
       map.addLayer({
@@ -1083,7 +1109,7 @@
         type: 'line',
         source: id,
         layout: { 'line-join': 'round', 'line-cap': 'round' },
-        paint: paint
+        paint: corePaint
       });
     }
 

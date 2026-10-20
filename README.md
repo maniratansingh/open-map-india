@@ -32,8 +32,10 @@ OpenMapIndia is strictly designed to be **100% self-contained on GitHub Pages** 
 
 ## 📚 Complete API Reference & Documentation
 
-* Detailed endpoint directory for all 35 States and 594 Districts:  
-  👉 Read the [**API_REFERENCE.md**](file:///Users/mrps/Documents/MAP/API_REFERENCE.md)
+* **Complete State-Wise District Directory (594 Districts Linked)**:  
+  👉 Browse the [**DISTRICT_DIRECTORY.md**](DISTRICT_DIRECTORY.md) for direct links to all 594 district datasets!
+* **API Documentation & Schema Reference**:  
+  👉 Read the [**API_REFERENCE.md**](API_REFERENCE.md)
 
 ---
 

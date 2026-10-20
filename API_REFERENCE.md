@@ -95,22 +95,25 @@ To get all districts in a state, append `/states/<state_slug>.json`:
 
 ---
 
-## 3. District Package Endpoints (Sample Highlights)
+## 3. District Package Endpoints (All 594 Districts)
+
+> 📖 **Full National Directory**: For the complete, state-wise directory of all 594 districts with clickable links and infrastructure scorecards, see [**`DISTRICT_DIRECTORY.md`**](DISTRICT_DIRECTORY.md).
 
 Each district endpoint delivers all villages, coordinates, nearest PHC/hospital, nearest highway junction, and district infrastructure analytics:
 
-* **Pattern**: `.../api/v1/districts/<state_slug>/<district_slug>.json`
+* **Endpoint Pattern**: `https://cdn.jsdelivr.net/gh/<owner>/<repo>@main/api/v1/districts/<state_slug>/<district_slug>.json`
+* **Localhost Pattern**: `http://localhost:8000/api/v1/districts/<state_slug>/<district_slug>.json`
 
-### Key District Endpoints:
-* **Basti (UP)**: `.../api/v1/districts/uttar_pradesh/basti.json` (4,702 settlements)
-* **Sant Kabir Nagar (UP)**: `.../api/v1/districts/uttar_pradesh/sant_kabir_nagar.json` (2,180 settlements)
-* **Gorakhpur (UP)**: `.../api/v1/districts/uttar_pradesh/gorakhpur.json` (3,410 settlements)
-* **Lucknow (UP)**: `.../api/v1/districts/uttar_pradesh/lucknow.json`
-* **Varanasi (UP)**: `.../api/v1/districts/uttar_pradesh/varanasi.json`
-* **Pune (MH)**: `.../api/v1/districts/maharashtra/pune.json`
-* **Bangalore (KA)**: `.../api/v1/districts/karnataka/bangalore.json`
-* **Patna (BR)**: `.../api/v1/districts/bihar/patna.json`
-* **Wayanad (KL)**: `.../api/v1/districts/kerala/wayanad.json`
+### Sample District Endpoints:
+* **Basti (UP)**: [`basti.json`](api/v1/districts/uttar_pradesh/basti.json) (4,702 settlements)
+* **Sant Kabir Nagar (UP)**: [`sant_kabir_nagar.json`](api/v1/districts/uttar_pradesh/sant_kabir_nagar.json) (562 settlements)
+* **Gorakhpur (UP)**: [`gorakhpur.json`](api/v1/districts/uttar_pradesh/gorakhpur.json) (26 settlements)
+* **Lucknow (UP)**: [`lucknow.json`](api/v1/districts/uttar_pradesh/lucknow.json) (31 settlements)
+* **Varanasi (UP)**: [`varanasi.json`](api/v1/districts/uttar_pradesh/varanasi.json) (379 settlements)
+* **Pune (MH)**: [`pune.json`](api/v1/districts/maharashtra/pune.json) (1,882 settlements)
+* **Patna (BR)**: [`patna.json`](api/v1/districts/bihar/patna.json) (1,402 settlements)
+
+👉 **Browse all 594 districts in [DISTRICT_DIRECTORY.md](DISTRICT_DIRECTORY.md)**.
 
 ---
 

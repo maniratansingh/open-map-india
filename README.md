@@ -77,9 +77,11 @@ open-map-india/
 └── vps_heavy_edition/
     ├── README.md                      <-- In-depth VPS deployment & systemd guide
     ├── server.py                      <-- Production Python API Server (CORS + Routing)
+    ├── progress.html                  <-- Live Web Progress & Engine Telemetry Dashboard
     ├── build_full_india.py            <-- Batch builder for multi-GB dense road curves
     └── data/                          <-- Stored on VPS NVMe disk (Ignored by Git)
         ├── india.osm.pbf              <-- Raw OpenStreetMap planet extract
+        ├── progress.json              <-- Real-time batch computation state telemetry
         └── full_routes/               <-- High-density road curves for all 594 districts
 ```
 

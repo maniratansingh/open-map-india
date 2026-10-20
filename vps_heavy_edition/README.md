@@ -51,9 +51,11 @@ open-map-india/
 └── vps_heavy_edition/
     ├── README.md                      <-- This VPS deployment manual
     ├── server.py                      <-- High-performance Python API Server (CORS + Routing)
+    ├── progress.html                  <-- Live Web Progress & Telemetry Dashboard
     ├── build_full_india.py            <-- Batch generator for multi-GB dense turn-by-turn routes
     └── data/                          <-- Stored locally on VPS disk (Ignored by Git)
         ├── india.osm.pbf              <-- Raw OpenStreetMap planet extract
+        ├── progress.json              <-- Real-time batch computation state telemetry
         └── full_routes/               <-- High-density road curves for all 594 districts
 ```
 
@@ -200,7 +202,16 @@ The output is written directly to:
 
 ## 🌐 Complete API Reference for VPS Endpoints
 
-### 1. Server Health & Monitoring
+### 1. Live Web Progress Dashboard & Telemetry
+Open in any browser to watch background computation progress in real-time with live progress bars, speedometers, and terminal logs:
+```http
+GET /progress.html
+GET /api/v1/build_progress
+```
+
+---
+
+### 2. Server Health & Monitoring
 ```http
 GET /health
 ```
